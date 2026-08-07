@@ -559,7 +559,6 @@ done
 echo "  ${norm}[${green}+${norm}] Fixing perms..."
 chown -R rtorrent:rtorrent \
   ${CONFIG_PATH} \
-  ${TOPDIR_PATH} \
   ${PASSWD_PATH} \
   ${GEOIP2_PATH}
 
