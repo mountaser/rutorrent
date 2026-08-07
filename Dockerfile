@@ -143,6 +143,9 @@ RUN git clone -q "https://github.com/QuickBox/club-QuickBox" . && rm -rf .git
 WORKDIR /dist/rutorrent-theme-material
 RUN git clone -q "https://github.com/themightykitten/ruTorrent-MaterialDesign" . && rm -rf .git
 
+WORKDIR /dist/flood
+RUN curl -fsSL "https://github.com/jesec/flood/releases/latest/download/flood-linux-x64" -o flood && chmod +x flood
+
 FROM golang:alpine AS geoip2
 
 ARG MM_ACCOUNT
@@ -254,6 +257,7 @@ COPY --from=download --chown=nobody:nogroup /dist/rutorrent-filemanager /var/www
 COPY --from=download --chown=nobody:nogroup /dist/rutorrent-ratio /var/www/rutorrent/plugins/ratiocolor
 COPY --from=download --chown=nobody:nogroup /dist/rutorrent-theme-quick /var/www/rutorrent/plugins/theme/themes/QuickBox
 COPY --from=download --chown=nobody:nogroup /dist/rutorrent-theme-material /var/www/rutorrent/plugins/theme/themes/MaterialDesign
+COPY --from=download /dist/flood/flood /usr/local/bin/flood
 
 VOLUME [ "/config", "/data", "/passwd" ]
 
