@@ -290,8 +290,14 @@ if [ -d "${CONFIG_PATH}/rtorrent/session" ]; then
 fi
 if [ -f "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" ]; then
   echo "  ${norm}[${green}+${norm}] Detected binhex custom rtorrent.rc (${CONFIG_PATH}/rtorrent/config/rtorrent.rc)..."
-  sed -i 's/^\s*scgi_port\s*=/ # scgi_port =/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
-  sed -i 's!/usr/share/webapps/rutorrent!/var/www/rutorrent!g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*scgi_port[[:space:]]*=.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
+  sed -i -E 's!/usr/share/webapps/rutorrent!/var/www/rutorrent!g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*log\.add_output[[:space:]]*=[[:space:]]*"dht_debug".*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*log\.add_output[[:space:]]*=[[:space:]]*"tracker_debug".*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*log\.add_output[[:space:]]*=[[:space:]]*"storage_debug".*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*check_hash[[:space:]]*=.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*max_memory_usage[[:space:]]*=.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*execute[[:space:]]*=[[:space:]]*\{.*initplugins.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
   printf "\nimport = \"%s\"\n" "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" >> /etc/rtorrent/.rtlocal.rc
 fi
 
