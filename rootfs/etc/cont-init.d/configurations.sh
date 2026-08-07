@@ -24,7 +24,10 @@ CONFIG_PATH=${CONFIG_PATH:-/config}
 TOPDIR_PATH=${TOPDIR_PATH:-/data}
 PASSWD_PATH=${PASSWD_PATH:-/passwd}
 DOWNLOAD_PATH=${DOWNLOAD_PATH:-${TOPDIR_PATH}/downloads}
-WAN_IP=${WAN_IP:-$(dig -4 +short myip.opendns.com @resolver1.opendns.com)}
+WAN_IP=${WAN_IP:-$(curl -s4 --connect-timeout 2 https://api.ipify.org 2>/dev/null || dig -4 +short myip.opendns.com @resolver1.opendns.com 2>/dev/null)}
+if ! echo "${WAN_IP}" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
+  WAN_IP=""
+fi
 TZ=${TZ:-UTC}
 MEMORY_LIMIT=${MEMORY_LIMIT:-512M}
 UPLOAD_MAX_SIZE=${UPLOAD_MAX_SIZE:-16M}
