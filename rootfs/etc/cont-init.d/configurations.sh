@@ -298,6 +298,7 @@ if [ -f "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" ]; then
   sed -i -E 's/^[[:space:]]*check_hash[[:space:]]*=.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
   sed -i -E 's/^[[:space:]]*max_memory_usage[[:space:]]*=.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
   sed -i -E 's/^[[:space:]]*execute[[:space:]]*=[[:space:]]*\{.*initplugins.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*.*inserted_new.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
   printf "\nimport = \"%s\"\n" "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" >> /etc/rtorrent/.rtlocal.rc
 fi
 

@@ -35,11 +35,14 @@ dht.port.set = @RT_DHT_PORT@
 # XMLRPC size limit
 network.xmlrpc.size_limit.set = @XMLRPC_SIZE_LIMIT@
 
-# Configure session saving interval to balance disk usage and torrent information accuracy
-schedule2 = session_save, 1200, @RT_SESSION_SAVE_SECONDS@, ((session.save))
+# Performance & Memory limits for large sessions (700+ torrents)
+pieces.memory.max.set = 3500M
+network.max_open_files.set = 4096
+network.http.max_open.set = 99
+network.max_open_sockets.set = 1024
 
-# Save torrents immediately to prevent losing them between session saving intervals
-method.set_key = event.download.inserted_new, "schedule2 = ((d.hash)), 0, 0, ((d.save_full_session))"
+# Save torrents interval (every 20 mins)
+schedule2 = session_save, 1200, @RT_SESSION_SAVE_SECONDS@, ((session.save))
 
 # Configure whether to delay tracker announces at startup
 trackers.delay_scrape = @RT_TRACKER_DELAY_SCRAPE@
@@ -57,9 +60,7 @@ system.file.allocate.set = @RT_PREALLOCATE_TYPE@
 log.open_file = "log",(cat,(cfg.logs),"rtorrent.log")
 log.add_output = "@RT_LOG_LEVEL@","log"
 log.add_output = "rpc_events","log"
-#log.execute = (cat,(cfg.logs),"execute.log")
-#log.xmlrpc = (cat,(cfg.logs),"xmlrpc.log")
 
-# Initialize plugins
-execute.nothrow.bg = sh,-c,"/usr/bin/php84 /var/www/rutorrent/php/initplugins.php rtorrent"
+# Initialize plugins in background after rTorrent loads session
+execute.nothrow.bg = sh,-c,"(sleep 3 && /usr/bin/php84 /var/www/rutorrent/php/initplugins.php rtorrent) &"
 
