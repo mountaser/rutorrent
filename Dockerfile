@@ -140,6 +140,9 @@ RUN git clone -q "https://github.com/Gyran/rutorrent-ratiocolor" . && rm -rf .gi
 WORKDIR /dist/rutorrent-theme-quick
 RUN git clone -q "https://github.com/QuickBox/club-QuickBox" . && rm -rf .git
 
+WORKDIR /dist/rutorrent-theme-material
+RUN git clone -q "https://github.com/themightykitten/ruTorrent-MaterialDesign" . && rm -rf .git
+
 FROM golang:alpine AS geoip2
 
 ARG MM_ACCOUNT
@@ -250,6 +253,7 @@ COPY --from=download --chown=nobody:nogroup /dist/rutorrent-geoip2 /var/www/ruto
 COPY --from=download --chown=nobody:nogroup /dist/rutorrent-filemanager /var/www/rutorrent/plugins/filemanager
 COPY --from=download --chown=nobody:nogroup /dist/rutorrent-ratio /var/www/rutorrent/plugins/ratiocolor
 COPY --from=download --chown=nobody:nogroup /dist/rutorrent-theme-quick /var/www/rutorrent/plugins/theme/themes/QuickBox
+COPY --from=download --chown=nobody:nogroup /dist/rutorrent-theme-material /var/www/rutorrent/plugins/theme/themes/MaterialDesign
 
 VOLUME [ "/config", "/data", "/passwd" ]
 
