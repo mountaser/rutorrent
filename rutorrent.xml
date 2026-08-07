@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Container version="2">
-  <Name>rutorrent</Name>
+  <Name>binhex-rtorrentvpn</Name>
   <Repository>ghcr.io/mountaser/rutorrent:latest</Repository>
   <Registry>https://github.com/mountaser/rutorrent/pkgs/container/rutorrent</Registry>
   <Network>swag</Network>
