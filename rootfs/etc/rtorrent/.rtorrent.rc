@@ -47,9 +47,6 @@ protocol.encryption.set = allow_incoming,try_outgoing,enable_retry
 # Set the umask for this process, which is applied to all files created by the program
 system.umask.set = 0022
 
-# Add a preferred filename encoding to the list
-encoding.add = UTF-8
-
 # Watch a directory for new torrents, and stop those that have been deleted
 directory.watch.added = (cat,(cfg.watch)), load.start
 schedule2 = untied_directory, 5, 5, (cat,"stop_untied=",(cfg.watch),"*.torrent")

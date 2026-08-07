@@ -475,14 +475,25 @@ fi
 
 # Check GeoIP2 databases
 echo "  ${norm}[${green}+${norm}] Setting GeoIP2 databases..."
+geoip_valid=true
 for mmdb in GeoLite2-ASN GeoLite2-City GeoLite2-Country; do
-  if [ ! -f "${GEOIP2_PATH}/${mmdb}.mmdb" ]; then
-    cp -f "/var/mmdb/${mmdb}.mmdb" "${GEOIP2_PATH}/"
+  if [ ! -f "${GEOIP2_PATH}/${mmdb}.mmdb" ] || [ ! -s "${GEOIP2_PATH}/${mmdb}.mmdb" ]; then
+    if [ -f "/var/mmdb/${mmdb}.mmdb" ] && [ -s "/var/mmdb/${mmdb}.mmdb" ]; then
+      cp -f "/var/mmdb/${mmdb}.mmdb" "${GEOIP2_PATH}/"
+    else
+      geoip_valid=false
+    fi
   fi
-  if [ -d "/var/www/rutorrent/plugins/geoip2" ]; then
+  if [ -d "/var/www/rutorrent/plugins/geoip2" ] && [ -f "${GEOIP2_PATH}/${mmdb}.mmdb" ]; then
     ln -sf "${GEOIP2_PATH}/${mmdb}.mmdb" "/var/www/rutorrent/plugins/geoip2/${mmdb}.mmdb"
   fi
 done
+
+if [ "$geoip_valid" = "false" ]; then
+  echo "    ${norm}[${yellow}+${norm}] GeoIP2 databases empty or missing, removing GeoIP2 block from Nginx..."
+  sed -i 's/$geoip2_data_city_name//g' /etc/nginx/nginx.conf
+  sed -i '/geoip2 .*\.mmdb/,/^\s*}/d' /etc/nginx/nginx.conf
+fi
 
 # Check ruTorrent plugins
 echo "  ${norm}[${green}+${norm}] Checking ruTorrent custom plugins..."
