@@ -3,10 +3,10 @@ ARG LIBSIG_VERSION=3.6.0
 ARG CARES_VERSION=1.34.5
 ARG CURL_VERSION=8.14.0
 ARG GEOIP2_PHPEXT_VERSION=1.3.1
-ARG LIBTORRENT_VERSION=0.15.3
-ARG RTORRENT_VERSION=0.15.3
+ARG LIBTORRENT_VERSION=0.16.20
+ARG RTORRENT_VERSION=0.16.20
 ARG MM_COMMON_VERSION=1.0.6
-ARG RUTORRENT_REVISION=b9b5872fb17169f3ddb76529b174a2a267a13774
+ARG RUTORRENT_REVISION=v5.3.11
 
 FROM alpine:${ALPINE_VERSION} AS compile
 
@@ -155,7 +155,11 @@ AccountID ${MM_ACCOUNT}
 LicenseKey ${MM_LICENSE}
 EditionIDs GeoLite2-ASN GeoLite2-City GeoLite2-Country
 EOL
-RUN /opt/geoipupdate/bin/geoipupdate -v -f /etc/geoip2.conf -d ./
+RUN if [ -n "${MM_ACCOUNT}" ] && [ -n "${MM_LICENSE}" ]; then \
+      /opt/geoipupdate/bin/geoipupdate -v -f /etc/geoip2.conf -d ./ ; \
+    else \
+      mkdir -p ./ && touch GeoLite2-ASN.mmdb GeoLite2-City.mmdb GeoLite2-Country.mmdb ; \
+    fi
 
 ARG ALPINE_VERSION
 FROM alpine:${ALPINE_VERSION} AS builder

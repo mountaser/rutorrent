@@ -40,9 +40,9 @@ XMLRPC_SIZE_LIMIT=${XMLRPC_SIZE_LIMIT:-2M}
 XMLRPC_AUTHBASIC_STRING=${XMLRPC_AUTHBASIC_STRING:-rTorrent XMLRPC restricted access}
 RUTORRENT_AUTHBASIC_STRING=${RUTORRENT_AUTHBASIC_STRING:-ruTorrent restricted access}
 WEBDAV_AUTHBASIC_STRING=${WEBDAV_AUTHBASIC_STRING:-WebDAV restricted access}
-XMLRPC_PORT=${XMLRPC_PORT:-8000}
+XMLRPC_PORT=${XMLRPC_PORT:-5000}
 XMLRPC_HEALTH_PORT=$((XMLRPC_PORT + 1))
-RUTORRENT_PORT=${RUTORRENT_PORT:-8080}
+RUTORRENT_PORT=${RUTORRENT_PORT:-9080}
 RUTORRENT_HEALTH_PORT=$((RUTORRENT_PORT + 1))
 WEBDAV_PORT=${WEBDAV_PORT:-9000}
 WEBDAV_HEALTH_PORT=$((WEBDAV_PORT + 1))
@@ -219,6 +219,15 @@ sed -e "s!@WEBDAV_AUTHBASIC_STRING@!$WEBDAV_AUTHBASIC_STRING!g" \
 
 # Check htpasswd files
 echo "  ${norm}[${green}+${norm}] Setting Nginx Authentication configuration..."
+if [ -n "${WEBUI_USER}" ] && [ -n "${WEBUI_PASS}" ]; then
+  echo "    ${norm}[${green}+${norm}] Generating rutorrent.htpasswd for user ${green}${WEBUI_USER}${norm}..."
+  htpasswd -bc /passwd/rutorrent.htpasswd "${WEBUI_USER}" "${WEBUI_PASS}"
+fi
+if [ -n "${RPC2_USER}" ] && [ -n "${RPC2_PASS}" ]; then
+  echo "    ${norm}[${green}+${norm}] Generating rpc.htpasswd for user ${green}${RPC2_USER}${norm}..."
+  htpasswd -bc /passwd/rpc.htpasswd "${RPC2_USER}" "${RPC2_PASS}"
+fi
+
 if [ ! -s "/passwd/rpc.htpasswd" ]; then
   echo "    ${norm}[${yellow}+${norm}] rpc.htpasswd is empty, removing authentication"
   sed -i "s!auth_basic .*!#auth_basic!g" /etc/nginx/conf.d/rpc.conf
@@ -271,6 +280,17 @@ fi
 if [ "${RT_LOG_XMLRPC}" = "true" ]; then
   echo "    ${norm}[${blue}-${norm}] Enabling rTorrent xmlrpc log..."
   sed -i "s!#log\.xmlrpc.*!log\.xmlrpc = (cat,(cfg.logs),\"xmlrpc.log\")!g" /etc/rtorrent/.rtlocal.rc
+fi
+
+# Binhex compatibility checks for legacy session folder and config file
+if [ -d "${CONFIG_PATH}/rtorrent/session" ]; then
+  echo "  ${norm}[${green}+${norm}] Detected binhex session directory (${CONFIG_PATH}/rtorrent/session)..."
+  sed -i 's!\.session/!session/!g' /etc/rtorrent/.rtlocal.rc
+  rm -f ${CONFIG_PATH}/rtorrent/session/rtorrent.lock
+fi
+if [ -f "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" ]; then
+  echo "  ${norm}[${green}+${norm}] Detected binhex custom rtorrent.rc (${CONFIG_PATH}/rtorrent/config/rtorrent.rc)..."
+  echo "import = ${CONFIG_PATH}/rtorrent/config/rtorrent.rc" >> /etc/rtorrent/.rtlocal.rc
 fi
 
 # rTorrent default config
