@@ -634,6 +634,7 @@ FLOOD_BIN=$(command -v flood 2>/dev/null || echo "/usr/local/bin/flood")
 if [ "${ENABLE_FLOOD}" = "yes" ] && [ -n "${FLOOD_BIN}" ]; then
   echo "  ${norm}[${green}+${norm}] Setting up Flood UI service on port ${green}${FLOOD_PORT}${norm}..."
   mkdir -p /etc/services.d/flood ${CONFIG_PATH}/flood
+  chown -R rtorrent:rtorrent ${CONFIG_PATH}/flood
   cat > /etc/services.d/flood/run <<EOL
 #!/bin/sh
 while [ ! -S /var/run/rtorrent/scgi.socket ]; do
