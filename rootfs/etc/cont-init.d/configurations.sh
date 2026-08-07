@@ -351,12 +351,12 @@ cat > /var/www/rutorrent/conf/config.php <<EOL
 \$throttleMaxSpeed = 4294967294; // DO NOT EDIT THIS LINE!!! DO NOT COMMENT THIS LINE!!!
 
 \$pathToExternals = array(
-    "php"    => '$(which php84)',
-    "curl"   => '',
-    "gzip"   => '',
-    "id"     => '',
-    "stat"   => '',
-    "python" => '$(which python3)',
+    "php"    => '/usr/bin/php84',
+    "curl"   => '/usr/bin/curl',
+    "gzip"   => '/bin/gzip',
+    "id"     => '/usr/bin/id',
+    "stat"   => '/bin/stat',
+    "python" => '/usr/bin/python3',
 );
 
 // List of local interfaces
@@ -384,6 +384,19 @@ cat > /var/www/rutorrent/conf/config.php <<EOL
 EOL
 
 # Symlinking ruTorrent config
+ln -sf /usr/bin/php84 /usr/bin/php 2>/dev/null || true
+ln -sf /usr/bin/python3 /usr/bin/python 2>/dev/null || true
+ln -sf /bin/gzip /usr/bin/gzip 2>/dev/null || true
+
+if [ -f "${CONFIG_PATH}/rutorrent/conf/config.php" ]; then
+  echo "  ${norm}[${green}+${norm}] Updating legacy ruTorrent config (${CONFIG_PATH}/rutorrent/conf/config.php)..."
+  sed -i 's!/usr/bin/php!/usr/bin/php84!g' "${CONFIG_PATH}/rutorrent/conf/config.php"
+  sed -i 's!/usr/bin/python!/usr/bin/python3!g' "${CONFIG_PATH}/rutorrent/conf/config.php"
+  sed -i 's!/usr/bin/gzip!/bin/gzip!g' "${CONFIG_PATH}/rutorrent/conf/config.php"
+  sed -i 's/\$scgi_host = .*/\$scgi_host = "unix:\/\/\/var\/run\/rtorrent\/scgi.socket";/g' "${CONFIG_PATH}/rutorrent/conf/config.php"
+  sed -i 's/\$scgi_port = .*/\$scgi_port = 0;/g' "${CONFIG_PATH}/rutorrent/conf/config.php"
+fi
+
 rm -f /var/www/rutorrent/conf/users
 ln -s "${CONFIG_PATH}/rutorrent/conf/users" /var/www/rutorrent/conf/users
 if [ ! -f ${CONFIG_PATH}/rutorrent/conf/access.ini ]; then

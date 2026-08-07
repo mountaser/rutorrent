@@ -178,6 +178,7 @@ RUN apk --update --no-cache add \
     brotli \
     ca-certificates \
     coreutils \
+    curl \
     ffmpeg \
     findutils \
     geoip \
