@@ -290,7 +290,9 @@ if [ -d "${CONFIG_PATH}/rtorrent/session" ]; then
 fi
 if [ -f "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" ]; then
   echo "  ${norm}[${green}+${norm}] Detected binhex custom rtorrent.rc (${CONFIG_PATH}/rtorrent/config/rtorrent.rc)..."
-  echo "import = ${CONFIG_PATH}/rtorrent/config/rtorrent.rc" >> /etc/rtorrent/.rtlocal.rc
+  sed -i 's/^\s*scgi_port\s*=/ # scgi_port =/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
+  sed -i 's!/usr/share/webapps/rutorrent!/var/www/rutorrent!g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
+  printf "\nimport = \"%s\"\n" "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" >> /etc/rtorrent/.rtlocal.rc
 fi
 
 # rTorrent default config

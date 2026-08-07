@@ -61,4 +61,5 @@ log.add_output = "rpc_events","log"
 #log.xmlrpc = (cat,(cfg.logs),"xmlrpc.log")
 
 # Initialize plugins
-execute2 = {sh,-c,/usr/bin/php84 /var/www/rutorrent/php/initplugins.php rtorrent &}
+execute.nothrow.bg = sh,-c,"/usr/bin/php84 /var/www/rutorrent/php/initplugins.php rtorrent"
+
