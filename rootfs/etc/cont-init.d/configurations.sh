@@ -629,13 +629,17 @@ chmod +x /etc/services.d/rtorrent/run
 # Flood UI service
 ENABLE_FLOOD=${ENABLE_FLOOD:-yes}
 FLOOD_PORT=${FLOOD_PORT:-3000}
-if [ "${ENABLE_FLOOD}" = "yes" ] && [ -x /usr/local/bin/flood ]; then
+FLOOD_BIN=$(command -v flood 2>/dev/null || echo "/usr/local/bin/flood")
+if [ "${ENABLE_FLOOD}" = "yes" ] && [ -n "${FLOOD_BIN}" ]; then
   echo "  ${norm}[${green}+${norm}] Setting up Flood UI service on port ${green}${FLOOD_PORT}${norm}..."
   mkdir -p /etc/services.d/flood ${CONFIG_PATH}/flood
   cat > /etc/services.d/flood/run <<EOL
 #!/bin/sh
+while [ ! -S /var/run/rtorrent/scgi.socket ]; do
+  sleep 1
+done
 export HOME="${CONFIG_PATH}/flood"
-exec s6-setuidgid ${PUID}:${PGID} flood --host 0.0.0.0 --port ${FLOOD_PORT} --allowedpath ${TOPDIR_PATH} --allowedpath ${CONFIG_PATH} --rundir ${CONFIG_PATH}/flood --rtorrent-socket /var/run/rtorrent/scgi.socket
+exec s6-setuidgid ${PUID}:${PGID} flood --host 0.0.0.0 --port ${FLOOD_PORT} --auth none --rtsocket /var/run/rtorrent/scgi.socket --allowedpath ${TOPDIR_PATH} --allowedpath ${CONFIG_PATH} --rundir ${CONFIG_PATH}/flood
 EOL
   chmod +x /etc/services.d/flood/run
 fi
