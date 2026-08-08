@@ -620,29 +620,25 @@ chown -R rtorrent:rtorrent \
 echo -e "  ${norm}[${green}+${norm}] Settings services...\n"
 mkdir -p /etc/services.d/nginx
 cat > /etc/services.d/nginx/run <<EOL
-#!/usr/bin/execlineb -P
-with-contenv
-s6-setuidgid ${PUID}:${PGID}
-nginx -g "daemon off;"
+#!/bin/sh
+exec nginx -g "daemon off;"
 EOL
 chmod +x /etc/services.d/nginx/run
 
 mkdir -p /etc/services.d/php-fpm
 cat > /etc/services.d/php-fpm/run <<EOL
-#!/usr/bin/execlineb -P
-with-contenv
-s6-setuidgid ${PUID}:${PGID}
-php-fpm84 -F
+#!/bin/sh
+exec php-fpm84 -F
 EOL
 chmod +x /etc/services.d/php-fpm/run
 
 mkdir -p /etc/services.d/rtorrent
 cat > /etc/services.d/rtorrent/run <<EOL
-#!/usr/bin/execlineb -P
-with-contenv
-s6-setuidgid ${PUID}:${PGID}
-export HOME ${CONFIG_PATH}/rtorrent
-export PWD ${CONFIG_PATH}/rtorrent
+#!/bin/sh
+export HOME="${CONFIG_PATH}/rtorrent"
+export PWD="${CONFIG_PATH}/rtorrent"
+mkdir -p /var/run/rtorrent
+chown -R ${PUID}:${PGID} /var/run/rtorrent "${CONFIG_PATH}/rtorrent"
 EOL
 
 if [[ ! -z "$MM_ACCOUNT" ]] && [[ ! -z "$MM_LICENSE" ]]; then
@@ -652,16 +648,16 @@ ${NGINX_CRON} nginx -s reload >/proc/1/fd/1 2>/proc/1/fd/2
 EOL
   mkdir -p /etc/services.d/cron
   cat > /etc/services.d/cron/run <<EOL
-#!/usr/bin/execlineb -P
-with-contenv
-crond -f -l 2
+#!/bin/sh
+exec crond -f -l 2
 EOL
   chmod +x /etc/services.d/cron/run
 fi
+
 if [ -z "${WAN_IP}" ]; then
-  echo "rtorrent -D -o import=/etc/rtorrent/.rtlocal.rc" >> /etc/services.d/rtorrent/run
+  echo "exec s6-setuidgid ${PUID}:${PGID} rtorrent -D -o import=/etc/rtorrent/.rtlocal.rc" >> /etc/services.d/rtorrent/run
 else
-  echo "rtorrent -D -o import=/etc/rtorrent/.rtlocal.rc -i ${WAN_IP}" >> /etc/services.d/rtorrent/run
+  echo "exec s6-setuidgid ${PUID}:${PGID} rtorrent -D -o import=/etc/rtorrent/.rtlocal.rc -i ${WAN_IP}" >> /etc/services.d/rtorrent/run
 fi
 chmod +x /etc/services.d/rtorrent/run
 
