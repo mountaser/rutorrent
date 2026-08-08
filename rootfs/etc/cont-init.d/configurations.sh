@@ -163,8 +163,8 @@ touch /passwd/rpc.htpasswd \
 
 # Auto-clean stale session locks and temporary session recovery files
 echo "  ${norm}[${green}+${norm}] Cleaning stale rTorrent session temp files..."
-find "${CONFIG_PATH}/rtorrent/.session" -name "*.tmp" -delete 2>/dev/null || true
-rm -f "${CONFIG_PATH}/rtorrent/.session/rtorrent.lock"
+find "${CONFIG_PATH}/rtorrent/.session" "${CONFIG_PATH}/rtorrent/session" -name "*.tmp" -delete 2>/dev/null || true
+rm -f "${CONFIG_PATH}/rtorrent/.session/rtorrent.lock" "${CONFIG_PATH}/rtorrent/session/rtorrent.lock"
 
 # PHP
 echo "  ${norm}[${green}+${norm}] Setting PHP-FPM configuration..."
