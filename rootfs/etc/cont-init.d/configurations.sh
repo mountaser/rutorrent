@@ -629,6 +629,10 @@ chown -R rtorrent:rtorrent \
   ${GEOIP2_PATH}
 
 chmod -R 775 ${CONFIG_PATH}/rutorrent 2>/dev/null || true
+if [ -d "${CONFIG_PATH}/rutorrent/share" ]; then
+  chown -R rtorrent:rtorrent "${CONFIG_PATH}/rutorrent/share"
+  chmod -R 777 "${CONFIG_PATH}/rutorrent/share" 2>/dev/null || true
+fi
 
 chown -R rtorrent:rtorrent \
   /etc/rtorrent \
