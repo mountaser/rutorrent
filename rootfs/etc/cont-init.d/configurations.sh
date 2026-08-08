@@ -283,6 +283,10 @@ fi
 if [ -f "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" ]; then
   tr -d '\r' < "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" > "${CONFIG_PATH}/rtorrent/config/rtorrent.rc.tmp" && mv -f "${CONFIG_PATH}/rtorrent/config/rtorrent.rc.tmp" "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
 fi
+if [ -f "${CONFIG_PATH}/rtorrent/.rtstate.rc" ]; then
+  tr -d '\r' < "${CONFIG_PATH}/rtorrent/.rtstate.rc" > "${CONFIG_PATH}/rtorrent/.rtstate.rc.tmp" && mv -f "${CONFIG_PATH}/rtorrent/.rtstate.rc.tmp" "${CONFIG_PATH}/rtorrent/.rtstate.rc"
+  sed -i -E 's/^[[:space:]]*trackers\.use_udp\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtstate.rc"
+fi
 
 # rTorrent local config
 echo "  ${norm}[${green}+${norm}] Checking rTorrent bootstrap configuration..."

@@ -77,7 +77,6 @@ schedule = settings_snapshot, 10, @RT_STATE_SAVE_SECONDS@, ((execute.nothrow.bg,
   "echo \"throttle.max_peers.normal.set = ${PEERS_NORM}\" >> \"${TMP_FILE}\"; ", \
   "echo \"throttle.max_peers.seed.set = ${PEERS_SEED}\" >> \"${TMP_FILE}\"; ", \
   "echo \"protocol.pex.set = ${PEX}\" >> \"${TMP_FILE}\"; ", \
-  "echo \"trackers.use_udp.set = ${UDP}\" >> \"${TMP_FILE}\"; ", \
   "echo \"system.file.allocate.set = ${ALLOC}\" >> \"${TMP_FILE}\"; ", \
   "mv -f \"${TMP_FILE}\" \"${STATE_FILE}\"")))
 
