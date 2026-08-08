@@ -668,6 +668,7 @@ cat > /etc/services.d/rtorrent/run <<EOL
 #!/bin/sh
 export HOME="${CONFIG_PATH}/rtorrent"
 export PWD="${CONFIG_PATH}/rtorrent"
+export TERM="xterm-256color"
 mkdir -p /var/run/rtorrent
 chown -R ${PUID}:${PGID} /var/run/rtorrent "${CONFIG_PATH}/rtorrent"
 rm -f /var/run/rtorrent/scgi.socket "${CONFIG_PATH}/rtorrent/.session/rtorrent.lock" "${CONFIG_PATH}/rtorrent/session/rtorrent.lock"
