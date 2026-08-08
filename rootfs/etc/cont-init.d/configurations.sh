@@ -421,12 +421,13 @@ rm -f /var/www/rutorrent/conf/users
 ln -s "${CONFIG_PATH}/rutorrent/conf/users" /var/www/rutorrent/conf/users
 if [ ! -f ${CONFIG_PATH}/rutorrent/conf/access.ini ]; then
   mv /var/www/rutorrent/conf/access.ini ${CONFIG_PATH}/rutorrent/conf/access.ini
-  ln -sf ${CONFIG_PATH}/rutorrent/conf/access.ini /var/www/rutorrent/conf/access.ini
 fi
+ln -sf ${CONFIG_PATH}/rutorrent/conf/access.ini /var/www/rutorrent/conf/access.ini
+
 if [ ! -f ${CONFIG_PATH}/rutorrent/conf/plugins.ini ]; then
   mv /var/www/rutorrent/conf/plugins.ini ${CONFIG_PATH}/rutorrent/conf/plugins.ini
-  ln -sf ${CONFIG_PATH}/rutorrent/conf/plugins.ini /var/www/rutorrent/conf/plugins.ini
 fi
+ln -sf ${CONFIG_PATH}/rutorrent/conf/plugins.ini /var/www/rutorrent/conf/plugins.ini
 if [ -f ${CONFIG_PATH}/rutorrent/conf/plugins.ini ]; then
   if grep -q "\[httprpc\]" ${CONFIG_PATH}/rutorrent/conf/plugins.ini; then
     sed -i '/\[httprpc\]/,/^[[:space:]]*$/s/enabled = .*/enabled = no/' ${CONFIG_PATH}/rutorrent/conf/plugins.ini
