@@ -1,6 +1,3 @@
-# Launch in foreground for s6 supervisor
-system.daemon.set = false
-
 # Instance layout
 method.insert = cfg.basedir, private|const|string, (cat,"@CONFIG_PATH@/rtorrent/")
 method.insert = cfg.download, private|const|string, (cat,"@DOWNLOAD_PATH@/")
@@ -88,5 +85,4 @@ schedule = settings_snapshot, 10, @RT_STATE_SAVE_SECONDS@, ((execute.nothrow.bg,
 # execute.nothrow.bg = sh,-c,"(sleep 10 && /usr/bin/php84 /var/www/rutorrent/php/initplugins.php rtorrent) &"
 
 # Import runtime settings state if saved (must be last)
-import = (cat,(cfg.basedir),".rtstate.rc")
-
+try_import = (cat,(cfg.basedir),".rtstate.rc")

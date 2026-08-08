@@ -275,6 +275,15 @@ if [ "${WAN_IP}" ]; then
   echo "  ${norm}[${green}+${norm}] Using External IP ${green}${WAN_IP}${norm}"
 fi
 
+# Strip carriage returns from config files (dos2unix)
+tr -d '\r' < /etc/rtorrent/.rtlocal.rc > /etc/rtorrent/.rtlocal.rc.tmp && mv -f /etc/rtorrent/.rtlocal.rc.tmp /etc/rtorrent/.rtlocal.rc
+if [ -f "${CONFIG_PATH}/rtorrent/.rtorrent.rc" ]; then
+  tr -d '\r' < "${CONFIG_PATH}/rtorrent/.rtorrent.rc" > "${CONFIG_PATH}/rtorrent/.rtorrent.rc.tmp" && mv -f "${CONFIG_PATH}/rtorrent/.rtorrent.rc.tmp" "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
+fi
+if [ -f "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" ]; then
+  tr -d '\r' < "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" > "${CONFIG_PATH}/rtorrent/config/rtorrent.rc.tmp" && mv -f "${CONFIG_PATH}/rtorrent/config/rtorrent.rc.tmp" "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
+fi
+
 # rTorrent local config
 echo "  ${norm}[${green}+${norm}] Checking rTorrent bootstrap configuration..."
 mkdir -p ${CONFIG_PATH}/rtorrent
@@ -322,6 +331,8 @@ if [ -f "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" ]; then
   sed -i -E 's/^[[:space:]]*network\.port_random\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
   sed -i -E 's/^[[:space:]]*trackers\.use_udp\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
   sed -i -E 's/^[[:space:]]*network\.max_open_files\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*schedule2[[:space:]]*=/schedule =/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*protocol\.encryption\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
   if ! grep -q "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" /etc/rtorrent/.rtlocal.rc; then
     printf "\nimport = \"%s\"\n" "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" >> /etc/rtorrent/.rtlocal.rc
   fi
@@ -339,6 +350,8 @@ else
   sed -i -E 's/^[[:space:]]*network\.port_random\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
   sed -i -E 's/^[[:space:]]*trackers\.use_udp\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
   sed -i -E 's/^[[:space:]]*network\.max_open_files\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*schedule2[[:space:]]*=/schedule =/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*protocol\.encryption\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
 fi
 
 # ruTorrent config
