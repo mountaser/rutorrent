@@ -172,6 +172,8 @@ echo "  ${norm}[${green}+${norm}] Setting PHP-FPM configuration..."
 sed -e "s/@MEMORY_LIMIT@/$MEMORY_LIMIT/g" \
     -e "s/@UPLOAD_MAX_SIZE@/$UPLOAD_MAX_SIZE/g" \
     -e "s/@CLEAR_ENV@/$CLEAR_ENV/g" \
+    -e "s/@PUID@/$PUID/g" \
+    -e "s/@PGID@/$PGID/g" \
     -i /etc/php84/php-fpm.d/www.conf
 
 echo "  ${norm}[${green}+${norm}] Setting PHP INI configuration..."
@@ -645,7 +647,8 @@ echo "  ${norm}[${green}+${norm}] Fixing perms..."
 chown -R rtorrent:rtorrent \
   ${CONFIG_PATH} \
   ${PASSWD_PATH} \
-  ${GEOIP2_PATH}
+  ${GEOIP2_PATH} \
+  /var/www/rutorrent
 
 chmod -R 775 ${CONFIG_PATH}/rutorrent 2>/dev/null || true
 if [ -d "${CONFIG_PATH}/rutorrent/share" ]; then
