@@ -628,6 +628,8 @@ chown -R rtorrent:rtorrent \
   ${PASSWD_PATH} \
   ${GEOIP2_PATH}
 
+chmod -R 775 ${CONFIG_PATH}/rutorrent 2>/dev/null || true
+
 chown -R rtorrent:rtorrent \
   /etc/rtorrent \
   /var/cache/nginx \
