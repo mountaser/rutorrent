@@ -428,16 +428,14 @@ if [ ! -f ${CONFIG_PATH}/rutorrent/conf/plugins.ini ]; then
   mv /var/www/rutorrent/conf/plugins.ini ${CONFIG_PATH}/rutorrent/conf/plugins.ini
 fi
 ln -sf ${CONFIG_PATH}/rutorrent/conf/plugins.ini /var/www/rutorrent/conf/plugins.ini
-if [ -f ${CONFIG_PATH}/rutorrent/conf/plugins.ini ]; then
-  if grep -q "\[httprpc\]" ${CONFIG_PATH}/rutorrent/conf/plugins.ini; then
-    sed -i '/\[httprpc\]/,/^[[:space:]]*$/s/enabled = .*/enabled = no/' ${CONFIG_PATH}/rutorrent/conf/plugins.ini
-  else
-    printf "\n[httprpc]\nenabled = no\n" >> ${CONFIG_PATH}/rutorrent/conf/plugins.ini
-  fi
+
+# Patch httprpc plugin for rtorrent 0.16.x compatibility
+if [ -f /var/www/rutorrent/plugins/httprpc/action.php ]; then
+  echo "    ${norm}[${blue}+${norm}] Patching ruTorrent ${green}httprpc${norm} plugin for rtorrent 0.16.x..."
+  sed -i 's/"main"/""/g' /var/www/rutorrent/plugins/httprpc/action.php
 fi
 
 # Remove ruTorrent core plugins
-rm -rf "/var/www/rutorrent/plugins/httprpc" 2>/dev/null || true
 if [ "$RU_REMOVE_CORE_PLUGINS" != "false" ]; then
   for i in ${RU_REMOVE_CORE_PLUGINS//,/ }
   do
