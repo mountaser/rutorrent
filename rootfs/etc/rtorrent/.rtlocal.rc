@@ -84,8 +84,8 @@ schedule2 = settings_snapshot, 10, @RT_STATE_SAVE_SECONDS@, ((execute.nothrow.bg
   "echo \"system.file.allocate.set = ${ALLOC}\" >> \"${TMP_FILE}\"; ", \
   "mv -f \"${TMP_FILE}\" \"${STATE_FILE}\"")))
 
-# Initialize plugins in background after rTorrent loads session
-execute.nothrow.bg = sh,-c,"(sleep 10 && /usr/bin/php84 /var/www/rutorrent/php/initplugins.php rtorrent) &"
+# Initialize plugins when browser connects (disabled headless background init to prevent startup contention)
+# execute.nothrow.bg = sh,-c,"(sleep 10 && /usr/bin/php84 /var/www/rutorrent/php/initplugins.php rtorrent) &"
 
 # Import runtime settings state if saved (must be last)
 import = (cat,(cfg.basedir),".rtstate.rc")
