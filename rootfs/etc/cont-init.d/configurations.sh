@@ -318,6 +318,10 @@ if [ -f "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" ]; then
   sed -i -E 's/^[[:space:]]*max_memory_usage[[:space:]]*=.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
   sed -i -E 's/^[[:space:]]*execute[[:space:]]*=[[:space:]]*\{.*initplugins.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
   sed -i -E 's/^[[:space:]]*.*inserted_new.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*network\.port_range\.set[[:space:]]*=[[:space:]]*(.*)/port_range = \1/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*network\.port_random\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*trackers\.use_udp\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*network\.max_open_files\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
   if ! grep -q "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" /etc/rtorrent/.rtlocal.rc; then
     printf "\nimport = \"%s\"\n" "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" >> /etc/rtorrent/.rtlocal.rc
   fi
@@ -331,6 +335,10 @@ else
   sed -i -E 's/^[[:space:]]*system\.umask\.set[[:space:]]*=.*/system.umask.set = 0000/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
   sed -i -E 's/^[[:space:]]*directory\.watch\.added.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
   sed -i -E 's/^[[:space:]]*schedule2[[:space:]]*=[[:space:]]*untied_directory.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*network\.port_range\.set[[:space:]]*=[[:space:]]*(.*)/port_range = \1/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*network\.port_random\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*trackers\.use_udp\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*network\.max_open_files\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
 fi
 
 # ruTorrent config
