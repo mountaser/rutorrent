@@ -76,7 +76,7 @@ RT_STATE_SAVE_SECONDS=${RT_STATE_SAVE_SECONDS:-10}
 RT_TRACKER_DELAY_SCRAPE=${RT_TRACKER_DELAY_SCRAPE:-1}
 RT_RECEIVE_BUFFER_SIZE=${RT_RECEIVE_BUFFER_SIZE:-16M}
 RT_SEND_BUFFER_SIZE=${RT_SEND_BUFFER_SIZE:-16M}
-RT_PREALLOCATE_TYPE=${RT_PREALLOCATE_TYPE:-0}
+RT_PREALLOCATE_TYPE=${RT_PREALLOCATE_TYPE:-1}
 
 # ruTorrent
 RU_HTTP_USER_AGENT=${RU_HTTP_USER_AGENT:-Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/120.0}
@@ -161,7 +161,10 @@ touch /passwd/rpc.htpasswd \
   ${CONFIG_PATH}/rtorrent/log/rtorrent.log \
   ${RU_LOG_FILE}
 
-rm -f ${CONFIG_PATH}/rtorrent/.session/rtorrent.lock
+# Auto-clean stale session locks and temporary session recovery files
+echo "  ${norm}[${green}+${norm}] Cleaning stale rTorrent session temp files..."
+find "${CONFIG_PATH}/rtorrent/.session" -name "*.tmp" -delete 2>/dev/null || true
+rm -f "${CONFIG_PATH}/rtorrent/.session/rtorrent.lock"
 
 # PHP
 echo "  ${norm}[${green}+${norm}] Setting PHP-FPM configuration..."
@@ -522,6 +525,12 @@ if [ ! -f ${CONFIG_PATH}/rutorrent/share/settings/unpack.dat ]; then
   echo "    ${norm}[${blue}+${norm}] Setting ruTorrent ${green}Unpack${norm} plugin"
   echo 'O:7:"rUnpack":6:{s:4:"hash";s:10:"unpack.dat";s:7:"enabled";s:1:"1";s:6:"filter";s:4:"/.*/";s:4:"path";s:0:"";s:8:"addLabel";s:1:"0";s:7:"addName";s:1:"0";}' \
   > ${CONFIG_PATH}/rutorrent/share/settings/unpack.dat
+fi
+
+if [ ! -f ${CONFIG_PATH}/rutorrent/share/settings/autotools.dat ]; then
+  echo "    ${norm}[${blue}+${norm}] Provisioning default ruTorrent ${green}Autotools${norm} plugin configuration"
+  echo 'O:10:"rAutoTools":10:{s:4:"hash";s:13:"autotools.dat";s:6:"enable";s:1:"1";s:7:"autowatch";s:1:"0";s:12:"autowatch_path";s:0:"";s:11:"autowatch_is_move";s:1:"0";s:8:"automove";s:1:"1";s:11:"automove_path";s:0:"";s:14:"automove_is_copy";s:1:"0";s:14:"automove_is_link";s:1:"1";}' \
+  > ${CONFIG_PATH}/rutorrent/share/settings/autotools.dat
 fi
 
 # Check GeoIP2 databases
