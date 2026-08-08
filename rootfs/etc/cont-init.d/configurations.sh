@@ -654,11 +654,7 @@ EOL
   chmod +x /etc/services.d/cron/run
 fi
 
-if [ -z "${WAN_IP}" ]; then
-  echo "exec s6-setuidgid ${PUID}:${PGID} rtorrent -o import=/etc/rtorrent/.rtlocal.rc" >> /etc/services.d/rtorrent/run
-else
-  echo "exec s6-setuidgid ${PUID}:${PGID} rtorrent -o import=/etc/rtorrent/.rtlocal.rc -i ${WAN_IP}" >> /etc/services.d/rtorrent/run
-fi
+echo "exec s6-setuidgid ${PUID}:${PGID} rtorrent -o import=/etc/rtorrent/.rtlocal.rc" >> /etc/services.d/rtorrent/run
 chmod +x /etc/services.d/rtorrent/run
 
 # Flood UI service
