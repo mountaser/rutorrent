@@ -655,9 +655,9 @@ EOL
 fi
 
 if [ -z "${WAN_IP}" ]; then
-  echo "exec s6-setuidgid ${PUID}:${PGID} rtorrent -D -o import=/etc/rtorrent/.rtlocal.rc" >> /etc/services.d/rtorrent/run
+  echo "exec s6-setuidgid ${PUID}:${PGID} rtorrent -o import=/etc/rtorrent/.rtlocal.rc" >> /etc/services.d/rtorrent/run
 else
-  echo "exec s6-setuidgid ${PUID}:${PGID} rtorrent -D -o import=/etc/rtorrent/.rtlocal.rc -i ${WAN_IP}" >> /etc/services.d/rtorrent/run
+  echo "exec s6-setuidgid ${PUID}:${PGID} rtorrent -o import=/etc/rtorrent/.rtlocal.rc -i ${WAN_IP}" >> /etc/services.d/rtorrent/run
 fi
 chmod +x /etc/services.d/rtorrent/run
 
