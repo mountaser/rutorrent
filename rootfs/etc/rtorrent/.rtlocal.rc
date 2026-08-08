@@ -37,9 +37,11 @@ network.xmlrpc.size_limit.set = @XMLRPC_SIZE_LIMIT@
 
 # Performance & Memory limits for large sessions (700+ torrents)
 pieces.memory.max.set = 3500M
-network.max_open_files.set = 4096
-network.http.max_open.set = 99
-network.max_open_sockets.set = 1024
+network.max_open_files.set = 8192
+network.http.max_open.set = 256
+network.max_open_sockets.set = 2048
+pieces.preload.type.set = 1
+pieces.preload.min_size.set = 262144
 
 # Save torrents interval (every 20 mins)
 schedule2 = session_save, 1200, @RT_SESSION_SAVE_SECONDS@, ((session.save))

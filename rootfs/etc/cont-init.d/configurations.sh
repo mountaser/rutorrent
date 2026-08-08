@@ -24,9 +24,18 @@ CONFIG_PATH=${CONFIG_PATH:-/config}
 TOPDIR_PATH=${TOPDIR_PATH:-/data}
 PASSWD_PATH=${PASSWD_PATH:-/passwd}
 DOWNLOAD_PATH=${DOWNLOAD_PATH:-${TOPDIR_PATH}/downloads}
-WAN_IP=${WAN_IP:-$(curl -s4 --connect-timeout 2 https://api.ipify.org 2>/dev/null || dig -4 +short myip.opendns.com @resolver1.opendns.com 2>/dev/null)}
-if ! echo "${WAN_IP}" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
-  WAN_IP=""
+WAN_CACHE="${CONFIG_PATH}/rtorrent/.wan_ip_cache"
+if [ -z "${WAN_IP}" ] && [ -f "${WAN_CACHE}" ] && find "${WAN_CACHE}" -mmin -1440 2>/dev/null | grep -q .; then
+  WAN_IP=$(cat "${WAN_CACHE}")
+fi
+if [ -z "${WAN_IP}" ]; then
+  WAN_IP=$(curl -s4 --connect-timeout 2 https://api.ipify.org 2>/dev/null || dig -4 +short myip.opendns.com @resolver1.opendns.com 2>/dev/null)
+  if echo "${WAN_IP}" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
+    mkdir -p "${CONFIG_PATH}/rtorrent"
+    echo "${WAN_IP}" > "${WAN_CACHE}"
+  else
+    WAN_IP=""
+  fi
 fi
 TZ=${TZ:-UTC}
 MEMORY_LIMIT=${MEMORY_LIMIT:-512M}
