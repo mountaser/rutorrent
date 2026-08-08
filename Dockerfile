@@ -182,6 +182,7 @@ RUN apk --update --no-cache add \
     ca-certificates \
     coreutils \
     curl \
+    dtach \
     ffmpeg \
     findutils \
     geoip \

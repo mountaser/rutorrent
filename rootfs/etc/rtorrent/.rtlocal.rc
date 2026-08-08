@@ -18,9 +18,9 @@ session.path.set = (cat,(cfg.session))
 # PID file
 execute.nothrow = sh,-c,(cat,"echo >",(cfg.rundir),"rtorrent.pid"," ",(system.pid))
 
-# SCGI socket and make it group-writable and secure
+# SCGI socket, readable/writable by nginx and php-fpm (container-private namespace)
 network.scgi.open_local = (cat, (cfg.rundir), "scgi.socket")
-schedule = scgi_permission, 0, 0, (cat,"execute.nothrow=chmod,\"g+w,o=\",",(cfg.rundir),"scgi.socket")
+schedule = scgi_permission, 0, 0, (cat,"execute.nothrow=chmod,\"a+rw\",",(cfg.rundir),"scgi.socket")
 
 # Listening port for incoming peer traffic
 port_range = @RT_INC_PORT@-@RT_INC_PORT@

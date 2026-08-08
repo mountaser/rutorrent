@@ -70,6 +70,7 @@ RT_LOG_LEVEL=${RT_LOG_LEVEL:-info}
 RT_LOG_EXECUTE=${RT_LOG_EXECUTE:-false}
 RT_LOG_XMLRPC=${RT_LOG_XMLRPC:-false}
 RT_DHT_PORT=${RT_DHT_PORT:-6881}
+if [ -n "${RT_INC_PORT}" ]; then RT_INC_PORT_EXPLICIT=1; fi
 RT_INC_PORT=${RT_INC_PORT:-50000}
 RT_SESSION_SAVE_SECONDS=${RT_SESSION_SAVE_SECONDS:-3600}
 RT_STATE_SAVE_SECONDS=${RT_STATE_SAVE_SECONDS:-10}
@@ -288,6 +289,20 @@ if [ -f "${CONFIG_PATH}/rtorrent/.rtstate.rc" ]; then
   sed -i -E 's/^[[:space:]]*trackers\.use_udp\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtstate.rc"
 fi
 
+# Adopt the incoming peer port from a legacy config when RT_INC_PORT is not set explicitly.
+# Only .rtlocal.rc is allowed to declare port_range; a second declaration binds twice and
+# aborts rTorrent with "Could not open/bind port for listening: Address in use".
+for legacy_rc in "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" "${CONFIG_PATH}/rtorrent/.rtorrent.rc"; do
+  [ -f "${legacy_rc}" ] || continue
+  [ -n "${RT_INC_PORT_EXPLICIT}" ] && break
+  legacy_port=$(sed -nE 's/^[[:space:]]*(network\.port_range\.set|port_range)[[:space:]]*=[[:space:]]*([0-9]+).*/\2/p' "${legacy_rc}" | head -n1)
+  if [ -n "${legacy_port}" ]; then
+    RT_INC_PORT="${legacy_port}"
+    RT_INC_PORT_EXPLICIT=1
+    echo "  ${norm}[${green}+${norm}] Adopting incoming peer port ${green}${RT_INC_PORT}${norm} from $(basename ${legacy_rc})"
+  fi
+done
+
 # rTorrent local config
 echo "  ${norm}[${green}+${norm}] Checking rTorrent bootstrap configuration..."
 mkdir -p ${CONFIG_PATH}/rtorrent
@@ -331,7 +346,7 @@ if [ -f "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" ]; then
   sed -i -E 's/^[[:space:]]*max_memory_usage[[:space:]]*=.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
   sed -i -E 's/^[[:space:]]*execute[[:space:]]*=[[:space:]]*\{.*initplugins.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
   sed -i -E 's/^[[:space:]]*.*inserted_new.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
-  sed -i -E 's/^[[:space:]]*network\.port_range\.set[[:space:]]*=[[:space:]]*(.*)/port_range = \1/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*(network\.port_range\.set|port_range)[[:space:]]*=.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
   sed -i -E 's/^[[:space:]]*network\.port_random\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
   sed -i -E 's/^[[:space:]]*trackers\.use_udp\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
   sed -i -E 's/^[[:space:]]*network\.max_open_files\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
@@ -350,7 +365,7 @@ else
   sed -i -E 's/^[[:space:]]*system\.umask\.set[[:space:]]*=.*/system.umask.set = 0000/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
   sed -i -E 's/^[[:space:]]*directory\.watch\.added.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
   sed -i -E 's/^[[:space:]]*schedule2[[:space:]]*=[[:space:]]*untied_directory.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
-  sed -i -E 's/^[[:space:]]*network\.port_range\.set[[:space:]]*=[[:space:]]*(.*)/port_range = \1/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*(network\.port_range\.set|port_range)[[:space:]]*=.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
   sed -i -E 's/^[[:space:]]*network\.port_random\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
   sed -i -E 's/^[[:space:]]*trackers\.use_udp\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
   sed -i -E 's/^[[:space:]]*network\.max_open_files\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
@@ -669,15 +684,17 @@ cat > /etc/services.d/rtorrent/run <<EOL
 export HOME="${CONFIG_PATH}/rtorrent"
 export PWD="${CONFIG_PATH}/rtorrent"
 export TERM="xterm-256color"
-mkdir -p /var/run/rtorrent
+mkdir -p /var/run/rtorrent "${CONFIG_PATH}/rtorrent/log"
 chown -R ${PUID}:${PGID} /var/run/rtorrent "${CONFIG_PATH}/rtorrent"
-rm -f /var/run/rtorrent/scgi.socket "${CONFIG_PATH}/rtorrent/.session/rtorrent.lock" "${CONFIG_PATH}/rtorrent/session/rtorrent.lock"
+rm -f /var/run/rtorrent/scgi.socket /var/run/rtorrent/rtorrent.dtach "${CONFIG_PATH}/rtorrent/.session/rtorrent.lock" "${CONFIG_PATH}/rtorrent/session/rtorrent.lock"
 
-s6-setuidgid ${PUID}:${PGID} rtorrent -D -o import=/etc/rtorrent/.rtlocal.rc
-
-while pgrep -u ${PUID} rtorrent >/dev/null 2>&1; do
-  sleep 2
-done
+# dtach -N supplies rtorrent with a real pty (ncurses needs an epoll-able stdin) and stays
+# in the foreground so s6 supervises the process instead of restarting in a loop.
+# rtorrent.log stays empty on a hard crash because rtorrent's own curses UI writes fatal
+# startup errors to stdout, not its log file -- and stdout normally goes to the pty, which
+# dtach swallows since nothing is attached. Capture both stdout and stderr to a real file.
+exec s6-setuidgid ${PUID}:${PGID} dtach -N /var/run/rtorrent/rtorrent.dtach \\
+  sh -c 'rtorrent -o import=/etc/rtorrent/.rtlocal.rc >>"${CONFIG_PATH}/rtorrent/log/rtorrent-stderr.log" 2>&1; echo "EXIT=\$? at \$(date)" >> "${CONFIG_PATH}/rtorrent/log/rtorrent-exit.log"'
 EOL
 chmod +x /etc/services.d/rtorrent/run
 
