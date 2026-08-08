@@ -660,7 +660,15 @@ export HOME="${CONFIG_PATH}/rtorrent"
 export PWD="${CONFIG_PATH}/rtorrent"
 mkdir -p /var/run/rtorrent
 chown -R ${PUID}:${PGID} /var/run/rtorrent "${CONFIG_PATH}/rtorrent"
+rm -f /var/run/rtorrent/scgi.socket "${CONFIG_PATH}/rtorrent/.session/rtorrent.lock" "${CONFIG_PATH}/rtorrent/session/rtorrent.lock"
+
+s6-setuidgid ${PUID}:${PGID} rtorrent -D -o import=/etc/rtorrent/.rtlocal.rc
+
+while pgrep -u ${PUID} rtorrent >/dev/null 2>&1; do
+  sleep 2
+done
 EOL
+chmod +x /etc/services.d/rtorrent/run
 
 if [[ ! -z "$MM_ACCOUNT" ]] && [[ ! -z "$MM_LICENSE" ]]; then
   cat >> /etc/crontabs/root <<EOL
@@ -674,9 +682,6 @@ exec crond -f -l 2
 EOL
   chmod +x /etc/services.d/cron/run
 fi
-
-echo "exec s6-setuidgid ${PUID}:${PGID} rtorrent -o import=/etc/rtorrent/.rtlocal.rc" >> /etc/services.d/rtorrent/run
-chmod +x /etc/services.d/rtorrent/run
 
 # Flood UI service
 ENABLE_FLOOD=${ENABLE_FLOOD:-yes}
