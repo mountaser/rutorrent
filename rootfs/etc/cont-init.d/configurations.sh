@@ -64,7 +64,7 @@ RT_DHT_PORT=${RT_DHT_PORT:-6881}
 RT_INC_PORT=${RT_INC_PORT:-50000}
 RT_SESSION_SAVE_SECONDS=${RT_SESSION_SAVE_SECONDS:-3600}
 RT_STATE_SAVE_SECONDS=${RT_STATE_SAVE_SECONDS:-10}
-RT_TRACKER_DELAY_SCRAPE=${RT_TRACKER_DELAY_SCRAPE:-true}
+RT_TRACKER_DELAY_SCRAPE=${RT_TRACKER_DELAY_SCRAPE:-1}
 RT_RECEIVE_BUFFER_SIZE=${RT_RECEIVE_BUFFER_SIZE:-16M}
 RT_SEND_BUFFER_SIZE=${RT_SEND_BUFFER_SIZE:-16M}
 RT_PREALLOCATE_TYPE=${RT_PREALLOCATE_TYPE:-0}
@@ -306,7 +306,9 @@ if [ -f "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" ]; then
   sed -i -E 's/^[[:space:]]*max_memory_usage[[:space:]]*=.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
   sed -i -E 's/^[[:space:]]*execute[[:space:]]*=[[:space:]]*\{.*initplugins.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
   sed -i -E 's/^[[:space:]]*.*inserted_new.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
-  printf "\nimport = \"%s\"\n" "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" >> /etc/rtorrent/.rtlocal.rc
+  if ! grep -q "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" /etc/rtorrent/.rtlocal.rc; then
+    printf "\nimport = \"%s\"\n" "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" >> /etc/rtorrent/.rtlocal.rc
+  fi
 fi
 
 # rTorrent default config

@@ -45,7 +45,7 @@ network.max_open_sockets.set = 1024
 schedule2 = session_save, 1200, @RT_SESSION_SAVE_SECONDS@, ((session.save))
 
 # Configure whether to delay tracker announces at startup
-trackers.delay_scrape = @RT_TRACKER_DELAY_SCRAPE@
+trackers.delay_scrape.set = @RT_TRACKER_DELAY_SCRAPE@
 
 # Configure TCP rmem and wmem for rTorrent client
 network.send_buffer.size.set = @RT_SEND_BUFFER_SIZE@
@@ -85,7 +85,7 @@ schedule2 = settings_snapshot, 10, @RT_STATE_SAVE_SECONDS@, ((execute.nothrow.bg
   "mv -f \"${TMP_FILE}\" \"${STATE_FILE}\"")))
 
 # Initialize plugins in background after rTorrent loads session
-execute.nothrow.bg = sh,-c,"(sleep 3 && /usr/bin/php84 /var/www/rutorrent/php/initplugins.php rtorrent) &"
+execute.nothrow.bg = sh,-c,"(sleep 10 && /usr/bin/php84 /var/www/rutorrent/php/initplugins.php rtorrent) &"
 
 # Import runtime settings state if saved (must be last)
 import = (cat,(cfg.basedir),".rtstate.rc")
