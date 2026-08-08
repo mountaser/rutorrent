@@ -696,8 +696,12 @@ rm -f /var/run/rtorrent/scgi.socket /var/run/rtorrent/rtorrent.dtach "${CONFIG_P
 # rtorrent.log stays empty on a hard crash because rtorrent's own curses UI writes fatal
 # startup errors to stdout, not its log file -- and stdout normally goes to the pty, which
 # dtach swallows since nothing is attached. Capture both stdout and stderr to a real file.
+# umask 000 makes the SCGI socket world-writable from the instant it's created, instead of
+# relying on the "schedule = scgi_permission, 0, 0, ..." chmod -- with a large session,
+# rtorrent doesn't get around to running any scheduled command until it finishes loading
+# every torrent, so nginx/Radarr/Sonarr got "Permission denied" on the socket for minutes.
 exec s6-setuidgid ${PUID}:${PGID} dtach -N /var/run/rtorrent/rtorrent.dtach \\
-  sh -c 'rtorrent -o import=/etc/rtorrent/.rtlocal.rc >>"${CONFIG_PATH}/rtorrent/log/rtorrent-stderr.log" 2>&1; echo "EXIT=\$? at \$(date)" >> "${CONFIG_PATH}/rtorrent/log/rtorrent-exit.log"'
+  sh -c 'umask 000; rtorrent -o import=/etc/rtorrent/.rtlocal.rc >>"${CONFIG_PATH}/rtorrent/log/rtorrent-stderr.log" 2>&1; echo "EXIT=\$? at \$(date)" >> "${CONFIG_PATH}/rtorrent/log/rtorrent-exit.log"'
 EOL
 chmod +x /etc/services.d/rtorrent/run
 
