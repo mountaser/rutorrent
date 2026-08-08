@@ -28,6 +28,7 @@
   <Config Name="BitTorrent Incoming Port Variable" Target="RT_INC_PORT" Default="51741" Mode="" Description="rTorrent BitTorrent Incoming Port" Type="Variable" Display="always" Required="false" Mask="false">51741</Config>
   <Config Name="Enable Flood UI" Target="ENABLE_FLOOD" Default="yes" Mode="" Description="Enable Flood Modern UI (yes/no)" Type="Variable" Display="always" Required="false" Mask="false">yes</Config>
   <Config Name="Flood Port Variable" Target="FLOOD_PORT" Default="3000" Mode="" Description="Internal Flood Port" Type="Variable" Display="advanced-hide" Required="false" Mask="false">3000</Config>
+  <Config Name="State Save Interval Variable" Target="RT_STATE_SAVE_SECONDS" Default="10" Mode="" Description="Interval in seconds to save live UI settings changes to disk" Type="Variable" Display="advanced-hide" Required="false" Mask="false">10</Config>
   <Config Name="WebUI Username" Target="WEBUI_USER" Default="admin" Mode="" Description="ruTorrent WebUI Username" Type="Variable" Display="always" Required="false" Mask="false">admin</Config>
   <Config Name="WebUI Password" Target="WEBUI_PASS" Default="admin" Mode="" Description="ruTorrent WebUI Password" Type="Variable" Display="always" Required="false" Mask="false">admin</Config>
   <Config Name="RPC2 Username" Target="RPC2_USER" Default="admin" Mode="" Description="RPC2 Username for Sonarr/Radarr" Type="Variable" Display="always" Required="false" Mask="false">admin</Config>

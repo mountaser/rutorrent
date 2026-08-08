@@ -61,6 +61,32 @@ log.open_file = "log",(cat,(cfg.logs),"rtorrent.log")
 log.add_output = "@RT_LOG_LEVEL@","log"
 log.add_output = "rpc_events","log"
 
+# Save live UI setting changes to .rtstate.rc periodically
+schedule2 = settings_snapshot, 10, @RT_STATE_SAVE_SECONDS@, ((execute.nothrow.bg, sh, -c, (cat, \
+  "DOWN=\$(( ", (throttle.global_down.max_rate), " / 1024 )); ", \
+  "UP=\$(( ", (throttle.global_up.max_rate), " / 1024 )); ", \
+  "MAX_UP=", (throttle.max_uploads.global), "; ", \
+  "PEERS_NORM=", (throttle.max_peers.normal), "; ", \
+  "PEERS_SEED=", (throttle.max_peers.seed), "; ", \
+  "PEX=", (protocol.pex), "; ", \
+  "UDP=", (trackers.use_udp), "; ", \
+  "ALLOC=", (system.file.allocate), "; ", \
+  "STATE_FILE=\"", (cfg.basedir), ".rtstate.rc\"; ", \
+  "TMP_FILE=\"${STATE_FILE}.tmp\"; ", \
+  "echo \"# Auto-generated runtime settings state\" > \"${TMP_FILE}\"; ", \
+  "echo \"throttle.global_down.max_rate.set_kb = ${DOWN}\" >> \"${TMP_FILE}\"; ", \
+  "echo \"throttle.global_up.max_rate.set_kb = ${UP}\" >> \"${TMP_FILE}\"; ", \
+  "echo \"throttle.max_uploads.global.set = ${MAX_UP}\" >> \"${TMP_FILE}\"; ", \
+  "echo \"throttle.max_peers.normal.set = ${PEERS_NORM}\" >> \"${TMP_FILE}\"; ", \
+  "echo \"throttle.max_peers.seed.set = ${PEERS_SEED}\" >> \"${TMP_FILE}\"; ", \
+  "echo \"protocol.pex.set = ${PEX}\" >> \"${TMP_FILE}\"; ", \
+  "echo \"trackers.use_udp.set = ${UDP}\" >> \"${TMP_FILE}\"; ", \
+  "echo \"system.file.allocate.set = ${ALLOC}\" >> \"${TMP_FILE}\"; ", \
+  "mv -f \"${TMP_FILE}\" \"${STATE_FILE}\"")))
+
 # Initialize plugins in background after rTorrent loads session
 execute.nothrow.bg = sh,-c,"(sleep 3 && /usr/bin/php84 /var/www/rutorrent/php/initplugins.php rtorrent) &"
+
+# Import runtime settings state if saved (must be last)
+import = (cat,(cfg.basedir),".rtstate.rc")
 
