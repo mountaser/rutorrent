@@ -43,6 +43,10 @@ network.max_open_sockets.set = 2048
 pieces.preload.type.set = 1
 pieces.preload.min_size.set = 262144
 
+# Prioritize first and last pieces of files for fast media header parsing (video streaming)
+f.prioritize_first.enable.set = 1
+f.prioritize_last.enable.set = 1
+
 # Save torrents interval (every 20 mins)
 schedule2 = session_save, 1200, @RT_SESSION_SAVE_SECONDS@, ((session.save))
 
