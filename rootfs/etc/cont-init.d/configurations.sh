@@ -309,6 +309,10 @@ fi
 if [ ! -f ${CONFIG_PATH}/rtorrent/.rtorrent.rc ]; then
   echo "  ${norm}[${yellow}+${norm}] Creating default configuration..."
   cp /etc/rtorrent/.rtorrent.rc ${CONFIG_PATH}/rtorrent/.rtorrent.rc
+else
+  sed -i -E 's/^[[:space:]]*system\.umask\.set[[:space:]]*=.*/system.umask.set = 0000/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*directory\.watch\.added.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
+  sed -i -E 's/^[[:space:]]*schedule2[[:space:]]*=[[:space:]]*untied_directory.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
 fi
 
 # ruTorrent config
