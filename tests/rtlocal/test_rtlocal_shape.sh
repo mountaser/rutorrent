@@ -17,4 +17,6 @@ grep -q 'XMLRPC_HEALTH_PORT' "$F" || { echo "FAIL: snapshot not using health RPC
 if grep -q 'xmlrpc2scgi' "$F"; then echo "FAIL: references nonexistent xmlrpc2scgi"; exit 1; fi
 # state still imported last
 grep -Eq 'try_import = \(cat,\(cfg.basedir\),".rtstate.rc"\)' "$F" || { echo "FAIL: try_import missing"; exit 1; }
+if grep -Eq '^[[:space:]]*dht\.port\.set' "$F"; then echo "FAIL: deprecated dht.port.set present"; exit 1; fi
+grep -Eq '^[[:space:]]*dht\.override_port\.set' "$F" || { echo "FAIL: dht.override_port.set missing"; exit 1; }
 echo "PASS"
