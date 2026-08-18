@@ -723,6 +723,24 @@ exec s6-setuidgid ${PUID}:${PGID} dtach -N /var/run/rtorrent/rtorrent.dtach \\
 EOL
 chmod +x /etc/services.d/rtorrent/run
 
+cat > /etc/services.d/rtorrent/finish <<EOL
+#!/bin/sh
+# On service stop, ask rTorrent to shut down gracefully so it announces
+# event=stopped to all trackers before exiting (prevents "multiple locations").
+# Uses XMLRPC-over-HTTP on the local no-auth health port (same as healthcheck),
+# because the image has no SCGI CLI binary.
+SOCK="/var/run/rtorrent/scgi.socket"
+RPC_URL="http://127.0.0.1:${XMLRPC_HEALTH_PORT}"
+if [ -S "\${SOCK}" ]; then
+  curl -s --max-time 5 -H "Content-Type: text/xml" \\
+    --data '<?xml version="1.0"?><methodCall><methodName>system.shutdown</methodName><params></params></methodCall>' \\
+    "\${RPC_URL}" >/dev/null 2>&1 || true
+  # give rtorrent a moment to flush stopped-announces
+  i=0; while [ -S "\${SOCK}" ] && [ "\$i" -lt 10 ]; do sleep 1; i=\$((i+1)); done
+fi
+EOL
+chmod +x /etc/services.d/rtorrent/finish
+
 if [[ ! -z "$MM_ACCOUNT" ]] && [[ ! -z "$MM_LICENSE" ]]; then
   cat >> /etc/crontabs/root <<EOL
 ${GEOIP2_CRON} geoipupdate -v -f ${GEOIP2_CONF} -d ${GEOIP2_PATH} && chown rtorrent:rtorrent ${GEOIP2_PATH} -R >/proc/1/fd/1 2>/proc/1/fd/2
