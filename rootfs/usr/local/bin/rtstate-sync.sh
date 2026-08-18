@@ -53,9 +53,24 @@ rtstate_set_rc() {
   fi
 }
 
+rtstate_apply_state_to_rc() {
+  rc="$1"; st="$2"
+  [ -f "$st" ] || return 0
+  rtstate_keys | while IFS='|' read -r ckey getter kind; do
+    [ "$kind" = "bool_readonly" ] && continue
+    line=$(grep -E "^[[:space:]]*$(printf '%s' "$ckey" | sed -e 's/[.[\*^$]/\\&/g')[[:space:]]*=" "$st" | tail -n1 || true)
+    [ -n "$line" ] || continue
+    val=$(printf '%s' "$line" | sed -E 's/^[^=]*=[[:space:]]*//; s/[[:space:]]*$//')
+    if rtstate_validate "$kind" "$val"; then
+      rtstate_set_rc "$rc" "$ckey" "$val"
+    fi
+  done
+}
+
 case "${1:-}" in
   __keys) rtstate_keys ;;
   __validate) shift; rtstate_validate "$@" ;;
   __set_rc) shift; rtstate_set_rc "$@" ;;
+  __apply_state) shift; rtstate_apply_state_to_rc "$@" ;;
   *) echo "usage: rtstate-sync.sh {arbitrate|snapshot} ..." >&2; exit 2 ;;
 esac
