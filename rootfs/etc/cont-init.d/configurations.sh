@@ -77,7 +77,7 @@ RT_STATE_SAVE_SECONDS=${RT_STATE_SAVE_SECONDS:-10}
 RT_TRACKER_DELAY_SCRAPE=${RT_TRACKER_DELAY_SCRAPE:-1}
 RT_RECEIVE_BUFFER_SIZE=${RT_RECEIVE_BUFFER_SIZE:-16M}
 RT_SEND_BUFFER_SIZE=${RT_SEND_BUFFER_SIZE:-16M}
-RT_PREALLOCATE_TYPE=${RT_PREALLOCATE_TYPE:-1}
+RT_PREALLOCATE_TYPE=${RT_PREALLOCATE_TYPE:-0}
 
 # ruTorrent
 RU_HTTP_USER_AGENT=${RU_HTTP_USER_AGENT:-Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/120.0}
@@ -313,6 +313,7 @@ sed -e "s!@RT_LOG_LEVEL@!$RT_LOG_LEVEL!g" \
     -e "s!@RT_DHT_PORT@!$RT_DHT_PORT!g" \
     -e "s!@RT_INC_PORT@!$RT_INC_PORT!g" \
     -e "s!@XMLRPC_SIZE_LIMIT@!$XMLRPC_SIZE_LIMIT!g" \
+    -e "s!@XMLRPC_HEALTH_PORT@!$XMLRPC_HEALTH_PORT!g" \
     -e "s!@RT_SESSION_SAVE_SECONDS@!$RT_SESSION_SAVE_SECONDS!g" \
     -e "s!@RT_STATE_SAVE_SECONDS@!$RT_STATE_SAVE_SECONDS!g" \
     -e "s!@CONFIG_PATH@!$CONFIG_PATH!g" \
@@ -373,6 +374,23 @@ else
   sed -i -E 's/^[[:space:]]*network\.max_open_files\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
   sed -i -E 's/^[[:space:]]*schedule2[[:space:]]*=/schedule =/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
   sed -i -E 's/^[[:space:]]*protocol\.encryption\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
+fi
+
+# Resolve the synced rtorrent.rc (binhex config path wins if present).
+if [ -f "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" ]; then
+  RC_BASENAME="config/rtorrent.rc"
+else
+  RC_BASENAME=".rtorrent.rc"
+fi
+sed -i "s!@RC_BASENAME@!${RC_BASENAME}!g" /etc/rtorrent/.rtlocal.rc
+
+# Newest-write-wins arbitration so UI state and rtorrent.rc stay in sync.
+RC_PATH="${CONFIG_PATH}/rtorrent/${RC_BASENAME}"
+ST_PATH="${CONFIG_PATH}/rtorrent/.rtstate.rc"
+if [ -x /usr/local/bin/rtstate-sync.sh ]; then
+  echo "  ${norm}[${green}+${norm}] Reconciling UI state and rtorrent.rc (newest-write-wins)..."
+  /usr/local/bin/rtstate-sync.sh arbitrate "${RC_PATH}" "${ST_PATH}" || \
+    echo "  ${norm}[${yellow}-${norm}] rtstate arbitration skipped (non-fatal)"
 fi
 
 # ruTorrent config
