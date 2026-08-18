@@ -661,12 +661,16 @@ for theme in ${themes}; do
 done
 
 # Perms
-echo "  ${norm}[${green}+${norm}] Fixing perms..."
-chown -R rtorrent:rtorrent \
-  ${CONFIG_PATH} \
-  ${PASSWD_PATH} \
-  ${GEOIP2_PATH} \
-  /var/www/rutorrent
+PERMS_MARKER="${CONFIG_PATH}/rtorrent/.perms_initialized"
+if [ ! -f "${PERMS_MARKER}" ]; then
+  echo "  ${norm}[${green}+${norm}] First-run: fixing appdata ownership (one-time)..."
+  chown -R rtorrent:rtorrent \
+    ${CONFIG_PATH} \
+    ${PASSWD_PATH} \
+    ${GEOIP2_PATH} \
+    /var/www/rutorrent
+  touch "${PERMS_MARKER}" && chown rtorrent:rtorrent "${PERMS_MARKER}" || true
+fi
 
 chmod -R 775 ${CONFIG_PATH}/rutorrent 2>/dev/null || true
 if [ -d "${CONFIG_PATH}/rutorrent/share" ]; then
