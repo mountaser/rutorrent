@@ -740,7 +740,7 @@ if [ -S "\${SOCK}" ]; then
     --data '<?xml version="1.0"?><methodCall><methodName>system.shutdown</methodName><params></params></methodCall>' \\
     "\${RPC_URL}" >/dev/null 2>&1 || true
   # give rtorrent a moment to flush stopped-announces
-  i=0; while [ -S "\${SOCK}" ] && [ "\$i" -lt 10 ]; do sleep 1; i=\$((i+1)); done
+  i=0; while [ -S "\${SOCK}" ] && [ "\$i" -lt 3 ]; do sleep 1; i=\$((i+1)); done
 fi
 EOL
 chmod +x /etc/services.d/rtorrent/finish
