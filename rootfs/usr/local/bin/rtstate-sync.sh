@@ -98,6 +98,48 @@ rtstate_arbitrate() {
   fi
 }
 
+# Query one rtorrent getter via XMLRPC-over-HTTP (same path as healthcheck).
+# Returns the raw <value> text (int or string). Overridable for tests.
+_rt_get() {
+  getter="$1"; url="$2"; kind="${3:-int}"
+  if [ -n "${RTSTATE_GET_CMD:-}" ]; then
+    "$RTSTATE_GET_CMD" "$getter"; return $?
+  fi
+  body="<?xml version=\"1.0\"?><methodCall><methodName>${getter}</methodName><params></params></methodCall>"
+  resp=$(curl -s --max-time 5 -H "Content-Type: text/xml" --data "${body}" "${url}" 2>/dev/null || true)
+  # Extract the scalar inside <value><i8>|<i4>|<int>|<string>...
+  val=$(printf '%s' "$resp" | sed -n -E 's:.*<value><(i8|i4|int)>(-?[0-9]+)</(i8|i4|int)></value>.*:\2:p')
+  if [ -z "$val" ]; then
+    val=$(printf '%s' "$resp" | sed -n -E 's:.*<value><string>([^<]*)</string></value>.*:\1:p')
+  fi
+  if [ -z "$val" ]; then
+    # Some builds return a bare <value>TEXT</value>
+    val=$(printf '%s' "$resp" | sed -n -E 's:.*<value>([^<]*)</value>.*:\1:p')
+  fi
+  case "$kind" in
+    path) printf '%s' "$val" ;;
+    *)    printf '%s' "$val" | tr -dc '0-9-' ;;
+  esac
+}
+
+rtstate_snapshot() {
+  rc="$1"; st="$2"; url="$3"; tmp="${st}.tmp"
+  printf '# Auto-generated runtime settings state\n' > "$tmp"
+  rtstate_keys | while IFS='|' read -r ckey getter kind; do
+    raw=$(_rt_get "$getter" "$url" "$kind" || true)
+    [ -n "$raw" ] || continue
+    val="$raw"
+    case "$ckey" in
+      *.max_rate.set_kb) val=$(( raw / 1024 )) ;;
+    esac
+    rtstate_validate "$kind" "$val" || continue
+    printf '%s = %s\n' "$ckey" "$val" >> "$tmp"
+  done
+  mv -f "$tmp" "$st"
+  # Propagate to RC (allocate excluded by apply_state).
+  rtstate_apply_state_to_rc "$rc" "$st"
+}
+
 case "${1:-}" in
   __keys) rtstate_keys ;;
   __validate) shift; rtstate_validate "$@" ;;
@@ -105,5 +147,6 @@ case "${1:-}" in
   __apply_state) shift; rtstate_apply_state_to_rc "$@" ;;
   __seed_state) shift; rtstate_seed_from_rc "$@" ;;
   arbitrate) shift; rtstate_arbitrate "$@" ;;
+  snapshot) shift; rtstate_snapshot "$@" ;;
   *) echo "usage: rtstate-sync.sh {arbitrate|snapshot} ..." >&2; exit 2 ;;
 esac
