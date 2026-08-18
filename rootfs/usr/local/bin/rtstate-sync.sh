@@ -37,8 +37,25 @@ rtstate_validate() {
   esac
 }
 
+# Escape a string for use as a literal in a sed replacement (RHS).
+_sed_rhs_escape() { printf '%s' "$1" | sed -e 's/[\/&]/\\&/g'; }
+# Escape a config key (has dots) for a sed BRE match; dots are literal enough,
+# but anchor on start + optional whitespace + literal key + whitespace + '='.
+rtstate_set_rc() {
+  rc="$1"; key="$2"; val="$3"
+  [ -f "$rc" ] || : > "$rc"
+  esc_key=$(printf '%s' "$key" | sed -e 's/[.[\*^$]/\\&/g')
+  if grep -Eq "^[[:space:]]*${esc_key}[[:space:]]*=" "$rc"; then
+    rhs=$(_sed_rhs_escape "${key} = ${val}")
+    sed -i -E "s/^[[:space:]]*${esc_key}[[:space:]]*=.*/${rhs}/" "$rc"
+  else
+    printf '%s = %s\n' "$key" "$val" >> "$rc"
+  fi
+}
+
 case "${1:-}" in
   __keys) rtstate_keys ;;
   __validate) shift; rtstate_validate "$@" ;;
+  __set_rc) shift; rtstate_set_rc "$@" ;;
   *) echo "usage: rtstate-sync.sh {arbitrate|snapshot} ..." >&2; exit 2 ;;
 esac
