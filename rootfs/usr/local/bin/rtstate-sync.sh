@@ -67,10 +67,23 @@ rtstate_apply_state_to_rc() {
   done
 }
 
+rtstate_seed_from_rc() {
+  rc="$1"; st="$2"; tmp="${st}.tmp"
+  printf '# Auto-generated runtime settings state\n' > "$tmp"
+  rtstate_keys | while IFS='|' read -r ckey getter kind; do
+    line=$(grep -E "^[[:space:]]*$(printf '%s' "$ckey" | sed -e 's/[.[\*^$]/\\&/g')[[:space:]]*=" "$rc" 2>/dev/null | tail -n1 || true)
+    [ -n "$line" ] || continue
+    val=$(printf '%s' "$line" | sed -E 's/^[^=]*=[[:space:]]*//; s/[[:space:]]*$//')
+    rtstate_validate "$kind" "$val" && printf '%s = %s\n' "$ckey" "$val" >> "$tmp"
+  done
+  mv -f "$tmp" "$st"
+}
+
 case "${1:-}" in
   __keys) rtstate_keys ;;
   __validate) shift; rtstate_validate "$@" ;;
   __set_rc) shift; rtstate_set_rc "$@" ;;
   __apply_state) shift; rtstate_apply_state_to_rc "$@" ;;
+  __seed_state) shift; rtstate_seed_from_rc "$@" ;;
   *) echo "usage: rtstate-sync.sh {arbitrate|snapshot} ..." >&2; exit 2 ;;
 esac
