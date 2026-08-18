@@ -3,9 +3,9 @@ set -eu
 HERE=$(cd "$(dirname "$0")" && pwd)
 F="$HERE/../../rootfs/etc/rtorrent/.rtlocal.rc"
 
-# deprecated opt must be gone
-if grep -Eq '^[[:space:]]*network\.max_open_files\.set' "$F"; then echo "FAIL: deprecated max_open_files present"; exit 1; fi
-grep -Eq '^[[:space:]]*system\.sockets\.files\.min\.set' "$F" || { echo "FAIL: missing sockets.files.min"; exit 1; }
+# network.max_open_files.set must be present for 0.16.20
+grep -Eq '^[[:space:]]*network\.max_open_files\.set' "$F" || { echo "FAIL: missing network.max_open_files.set"; exit 1; }
+if grep -Eq '^[[:space:]]*system\.sockets\.files\.min\.set' "$F"; then echo "FAIL: invalid system.sockets.files.min.set present"; exit 1; fi
 # curl concurrency cap present
 grep -Eq '^[[:space:]]*network\.http\.max_open\.set' "$F" || { echo "FAIL: missing http.max_open cap"; exit 1; }
 # snapshot uses helper, not inline echo blocks

@@ -33,7 +33,7 @@ network.xmlrpc.size_limit.set = @XMLRPC_SIZE_LIMIT@
 
 # Performance & Memory limits for large sessions (~600 torrents)
 pieces.memory.max.set = 3500M
-system.sockets.files.min.set = 8192
+network.max_open_files.set = 8192
 network.max_open_sockets.set = 1024
 network.http.max_open.set = 32
 pieces.preload.type.set = 1
