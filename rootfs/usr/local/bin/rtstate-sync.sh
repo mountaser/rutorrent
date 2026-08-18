@@ -79,11 +79,31 @@ rtstate_seed_from_rc() {
   mv -f "$tmp" "$st"
 }
 
+_has_keys() { grep -Eq '^[[:space:]]*[a-z]' "$1" 2>/dev/null; }
+_mtime() { stat -c %Y "$1" 2>/dev/null || echo 0; }
+
+rtstate_arbitrate() {
+  rc="$1"; st="$2"
+  [ -f "$rc" ] || : > "$rc"
+  if [ ! -f "$st" ] || ! _has_keys "$st"; then
+    rtstate_seed_from_rc "$rc" "$st"; return 0
+  fi
+  rc_m=$(_mtime "$rc"); st_m=$(_mtime "$st")
+  if [ "$rc_m" -gt "$st_m" ]; then
+    rtstate_seed_from_rc "$rc" "$st"            # config wins
+  else
+    cp -f "$rc" "${rc}.bak.$(date +%Y%m%d%H%M%S)" 2>/dev/null || true
+    rtstate_apply_state_to_rc "$rc" "$st"       # UI wins
+    rtstate_seed_from_rc "$rc" "$st"            # converge
+  fi
+}
+
 case "${1:-}" in
   __keys) rtstate_keys ;;
   __validate) shift; rtstate_validate "$@" ;;
   __set_rc) shift; rtstate_set_rc "$@" ;;
   __apply_state) shift; rtstate_apply_state_to_rc "$@" ;;
   __seed_state) shift; rtstate_seed_from_rc "$@" ;;
+  arbitrate) shift; rtstate_arbitrate "$@" ;;
   *) echo "usage: rtstate-sync.sh {arbitrate|snapshot} ..." >&2; exit 2 ;;
 esac
