@@ -1,273 +1,191 @@
-<p align="center"><a href="https://gitlab.com/cyberpnkz/rutorrent" target="_blank"><img width="1536" src=".rutorrent.gif"></a></p>
+# rTorrent + ruTorrent + Flood Container
 
 <p align="center">
-  <a href="https://hub.docker.com/r/k44sh/rutorrent/tags?page=1&ordering=last_updated">
-    <img src="https://img.shields.io/docker/v/k44sh/rutorrent/latest?logo=docker" alt="Latest Version">
+  <a href="https://github.com/mountaser/rutorrent/pkgs/container/rutorrent">
+    <img src="https://img.shields.io/badge/container-ghcr.io%2Fmountaser%2Frutorrent-blue?logo=docker" alt="GHCR Image">
   </a>
-  <a href="https://hub.docker.com/r/k44sh/rutorrent/">
-    <img src="https://img.shields.io/docker/image-size/k44sh/rutorrent/latest?logo=docker" alt="Docker Size">
-  </a>
-  <a href="https://hub.docker.com/r/k44sh/rutorrent/">
-    <img src="https://img.shields.io/docker/pulls/k44sh/rutorrent?logo=docker" alt="Docker Pulls">
-  </a>
-  <a href="https://gitlab.com/cyberpnkz/rutorrent/-/pipelines/main/latest">
-    <img src="https://img.shields.io/gitlab/pipeline-status/cyberpnkz%2Frutorrent?branch=main&label=build%20(main)&logo=gitlab" alt="Build Main">
-  </a>
-  <a href="https://gitlab.com/cyberpnkz/rutorrent/-/pipelines/dev/latest">
-    <img src="https://img.shields.io/gitlab/pipeline-status/cyberpnkz%2Frutorrent?branch=dev&label=build%20(dev)&logo=gitlab" alt="Build Dev">
-  </a>
-</p>
-<p align="center">
-  <a href="https://github.com/k44sh/rutorrent">
-    <img src="https://img.shields.io/github/stars/k44sh/rutorrent?logo=github" alt="Github Stars">
-  </a>
-  <a href="https://github.com/k44sh/rutorrent/network/members">
-    <img src="https://img.shields.io/github/forks/k44sh/rutorrent?logo=github" alt="Forks">
-  </a>
-  <a href="https://github.com/k44sh/rutorrent/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/k44sh/rutorrent" alt="License">
+  <a href="https://github.com/mountaser/rutorrent/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/mountaser/rutorrent" alt="License">
   </a>
 </p>
 
 ## About
 
-[rTorrent](https://github.com/rakshasa/rtorrent) and [ruTorrent](https://github.com/Novik/ruTorrent) Docker image based on [Alpine Linux](https://alpinelinux.org/).<br />
-___
+A modern, high-performance **rTorrent** (`0.16.20`), **ruTorrent** (`v5.3.11`), and **Flood** UI container based on Alpine Linux with PHP 8.4 and Nginx. Designed for large sessions (600+ torrents) with bidirectional UI-to-config settings sync, crash-prevention caps, and instant WebUI response times.
 
-## Features
+---
 
-* Run as non-root user
-* Multi-platform image
-* [NGINX](https://nginx.org/download) with [PHP 8.4](https://www.php.net/releases/8.4/en.php)
-* [GeoIP2](https://www.maxmind.com/en/geoip-databases) database by [MaxMind](https://www.maxmind.com) (_Update with your own key_)
-* [geoipupdate](https://github.com/maxmind/geoipupdate) to update MaxMind's GeoIP2 databases
-* [Cloudflare](https://www.cloudflare.com/ips/) trusted addresses for NGINX Real IP (_not enable by default_)
-* [libTorrent](https://github.com/rakshasa/libtorrent) (`0.15.3`) / [rTorrent](https://github.com/rakshasa/rtorrent) (`0.15.3`) compiled from source
-* [ruTorrent](https://github.com/Novik/ruTorrent) release (`v5.2.8`)
-* [c-ares](https://github.com/rakshasa/rtorrent/wiki/Performance-Tuning#rtrorrent-with-c-ares) and [UDNS](https://www.corpit.ru/mjt/udns.html) for asynchronous DNS requests
-* [mktorrent](https://github.com/Rudde/mktorrent) installed for ruTorrent create plugin
-* [Radarr](https://radarr.video) / [Sonarr](https://sonarr.tv) hardlinks compliance
-* ruTorrent [GeoIP2](https://github.com/Micdu70/geoip2-rutorrent) plugin
-* ruTorrent [Filemanager](https://github.com/nelu/rutorrent-filemanager) plugin
-* ruTorrent [Ratiocolors](https://github.com/Gyran/rutorrent-ratiocolor) plugin
-* ruTorrent [QuickBox](https://github.com/TrimmingFool/club-QuickBox) theme
-* `WAN IP` address automatically resolved for reporting to the tracker
-* `XMLRPC` through nginx over SCGI socket (basic auth optional)
-* `WebDAV` on completed downloads (basic auth optional)
-* Ability to add a custom ruTorrent `plugin` / `theme`
-* Allow specific configuration for `data` folder
-* Allow specific configuration for `config` folder
+## Key Features
+
+* **Upgraded Engine & UIs:** rTorrent/libTorrent `0.16.20` paired with ruTorrent `v5.3.11` and an embedded modern **Flood** UI (port 3000).
+* **MaterialDesign Default:** RuTorrent includes and defaults to the modern MaterialDesign theme.
+* **Bidirectional Settings Sync:** Live WebUI setting changes and hand-edited `rtorrent.rc` configurations synchronize automatically via newest-write-wins arbitration. Dangerous `system.file.allocate` changes in UI are excluded from config write-back to protect storage performance.
+* **Large-Session Tuning:** Optimized for 600+ active torrents with socket/preload tuning, `pieces.memory.max` caps, and capped curl/socket concurrency to eliminate tracker announce overload crashes (`EXIT=134 SIGABRT`).
+* **Graceful Tracker Stop:** On container shutdown, rTorrent announces `event=stopped` to all trackers before exiting, preventing "seeding from multiple locations" warnings on private trackers.
+* **Fast Boot & Instant WebUI:** External WAN IP lookups are cached on startup, PHP OPcache is optimized with zero revalidation, and ruTorrent plugin loading is cached for sub-second page loads.
+* **RPC & Automation Ready:** Dedicated `/RPC2` endpoint with enlarged 300s SCGI timeouts prevents HTTP 502 gateway errors during heavy Sonarr/Radarr multicalls.
+* **GeoIP2 Graceful Fallback:** Operates seamlessly with or without MaxMind account credentials.
+* **Multi-Arch Builds:** Published directly to GitHub Container Registry (`ghcr.io/mountaser/rutorrent`) for `linux/amd64` and `linux/arm64`.
+* **Unraid Community Template:** Includes a ready-to-import `rutorrent.xml` template configured with optimal defaults.
+
+---
+
+## Bidirectional Runtime Settings Sync
+
+The container reconciles settings between `rtorrent.rc` and `.rtstate.rc` using a newest-write-wins policy:
+
+1. **Boot Arbitration:** At startup, whichever configuration file has a newer modification time governs the session parameters.
+2. **Periodic Snapshot:** Live UI edits to global throttles, peer limits, PEX/UDP options, and default download directories snapshot to `.rtstate.rc` every `RT_STATE_SAVE_SECONDS` (default: 10s) and propagate back into `rtorrent.rc`.
+3. **Safety Exclusion:** `system.file.allocate` is read-only from UI state so disk allocation preferences in `rtorrent.rc` are never accidentally overwritten by ruTorrent.
+
+> **IMPORTANT:** Always stop the container gracefully using `docker stop` (SIGTERM) rather than `docker kill` so rTorrent can send `event=stopped` announces to private trackers and cleanly flush state.
+
+---
 
 ## Volume Overview
 
-| **Volume** | **Description**                                      |
-| ---------- | ---------------------------------------------------- |
-| `/config`  | Stores rTorrent, ruTorrent, and other configurations |
-| `/data`    | Main storage for downloaded torrent files            |
-| `/passwd`  | Holds `.htpasswd` files for HTTP authentication      |
+| **Volume** | **Description** |
+| ---------- | --------------- |
+| `/config` | Stores rTorrent, ruTorrent, Flood, and appdata files |
+| `/data` | Main storage directory for downloads |
+| `/passwd` | Holds `.htpasswd` files for basic authentication |
 
-> :information_source: **Note:** Volumes should be owned by the user/group matching the specified `PUID` and `PGID`.  
-
-## Radarr / Sonarr Users
-
-It is recommended to use the same `data` volume for `ruTorrent` and `Radarr`/`Sonarr`, in order to have a structure similar to this :
-
-```shell
-data
-├── downloads
-└── media
-   ├── movies
-   ├── music
-   └── tv
-```
-
-:information_source: More informations here : [TRaSH Guide](https://trash-guides.info/Hardlinks/How-to-setup-for/Docker/)
-
-## Multi Platform Images
-
-* linux/amd64
-* linux/arm64
-* linux/arm/v7
+---
 
 ## Usage
 
-### Docker Compose
+### Docker Compose (Recommended)
 
-Docker compose is the recommended way to run this image. Edit the compose file with your preferences and run the following command:
-
-```shell
-mkdir $(pwd)/{config,data,passwd}
-chown ${PUID}:${PGID} $(pwd)/{config,data,passwd}
-docker compose up -d
-docker compose logs -f
+```yaml
+version: '3.8'
+services:
+  rutorrent:
+    image: ghcr.io/mountaser/rutorrent:latest
+    container_name: rutorrent
+    environment:
+      - PUID=99
+      - PGID=100
+      - TZ=UTC
+      - ENABLE_FLOOD=yes
+      - FLOOD_PORT=3000
+      - RT_INC_PORT=50000
+      - RT_PREALLOCATE_TYPE=0
+      - RT_STATE_SAVE_SECONDS=10
+      - WEBUI_USER=admin
+      - WEBUI_PASS=admin
+    ports:
+      - "3000:3000"     # Flood UI
+      - "9080:9080"     # ruTorrent WebUI
+      - "5000:5000"     # SCGI / RPC (Sonarr / Radarr)
+      - "50000:50000"   # BitTorrent Incoming Peer Port (TCP)
+      - "6881:6881/udp" # DHT UDP Port
+    volumes:
+      - ./config:/config
+      - ./data:/data
+      - ./passwd:/passwd
+    restart: unless-stopped
 ```
 
-### Upgrade
+### Command Line
 
-To upgrade, pull the newer image and launch the container:
+```bash
+mkdir -p config data passwd
 
-```shell
-docker compose pull
-docker compose up -d
-```
-
-### Cleanup
-
-```shell
-docker compose down -v
-rm -rf $(pwd)/{config,data,passwd}
-```
-
-### Command line
-
-You can also use the following minimal command:
-
-```shell
-mkdir $(pwd)/{config,data,passwd}
-chown ${PUID}:${PGID} $(pwd)/{config,data,passwd}
 docker run -d --name rutorrent \
-  --ulimit nproc=65535 \
-  --ulimit nofile=32000:40000 \
-  -p 6881:6881/udp \
-  -p 8000:8000 \
-  -p 8080:8080 \
-  -p 9000:9000 \
+  -e PUID=99 \
+  -e PGID=100 \
+  -e TZ=UTC \
+  -e ENABLE_FLOOD=yes \
+  -e RT_INC_PORT=50000 \
+  -e RT_PREALLOCATE_TYPE=0 \
+  -p 3000:3000 \
+  -p 9080:9080 \
+  -p 5000:5000 \
   -p 50000:50000 \
+  -p 6881:6881/udp \
   -v $(pwd)/config:/config \
   -v $(pwd)/data:/data \
   -v $(pwd)/passwd:/passwd \
-  k44sh/rutorrent:latest && \
-  docker logs -f rutorrent
+  ghcr.io/mountaser/rutorrent:latest
 ```
 
-## Environment variables
+### Unraid Installation
 
-### General
+Copy `rutorrent.xml` into your Unraid flash drive templates directory (`/boot/config/plugins/dockerMan/templates-user/`) or add the repository directly in Community Applications. Ensure port `50000/tcp` is forwarded on your router for incoming connections.
 
-| **Variable**                 | **Description**                                           | **Default**                         |
-| ---------------------------- | --------------------------------------------------------- | ----------------------------------- |
-| `TZ`                         | The timezone assigned to the container                    | `UTC`                               |
-| `PUID`                       | rTorrent user ID                                          | `1000`                              |
-| `PGID`                       | rTorrent group ID                                         | `1000`                              |
-| `CONFIG_PATH`                | ruTorrent configuration path                              | `/config`                           |
-| `TOPDIR_PATH`                | ruTorrent top directory                                   | `/data`                             |
-| `DOWNLOAD_PATH`              | Path for downloaded files                                 | `/data/downloads`                   |
-| `MM_ACCOUNT`                 | Your MaxMind account ID                                   | _(required for auto update)_        |
-| `MM_LICENSE`                 | Your MaxMind license key                                  | _(required auto update)_            |
-| `WAN_IP`                     | Public IP address reported to the tracker                 | Auto resolved                       |
-| `MEMORY_LIMIT`               | PHP memory limit                                          | `512M`                              |
-| `UPLOAD_MAX_SIZE`            | Max upload size                                           | `16M`                               |
-| `CLEAR_ENV`                  | Clear environment in PHP-FPM workers                      | `yes`                               |
-| `OPCACHE_MEM_SIZE`           | PHP OpCache memory size                                   | `256`                               |
-| `MAX_FILE_UPLOADS`           | Max number of files allowed to be uploaded simultaneously | `50`                                |
-| `AUTH_DELAY`                 | Delay before HTTP Basic Auth is enforced                  | `0s`                                |
-| `REAL_IP_FROM`               | Trusted CIDR ranges that can set real client IPs          | `false`                             |
-| `REAL_IP_CF`                 | Trusted Cloudflare IP ranges that can set real client IPs | `false`                             |
-| `REAL_IP_HEADER`             | Header containing the real client IP                      | `X-Forwarded-For`                   |
-| `LOG_IP_VAR`                 | Variable used in Nginx logs for remote IP                 | `remote_addr`                       |
-| `XMLRPC_AUTHBASIC_STRING`    | Message shown for XMLRPC Basic Auth                       | `rTorrent XMLRPC restricted access` |
-| `XMLRPC_PORT`                | XMLRPC port through Nginx (over SCGI socket)              | `8000`                              |
-| `XMLRPC_SIZE_LIMIT`          | Max body size of XMLRPC calls                             | `2M`                                |
-| `RUTORRENT_AUTHBASIC_STRING` | Message shown for ruTorrent Basic Auth                    | `ruTorrent restricted access`       |
-| `RUTORRENT_PORT`             | HTTP port used by ruTorrent                               | `8080`                              |
-| `WEBDAV_AUTHBASIC_STRING`    | Message shown for WebDAV Basic Auth                       | `WebDAV restricted access`          |
-| `WEBDAV_PORT`                | WebDAV port for accessing completed downloads             | `9000`                              |
+---
 
-### rTorrent
+## Environment Variables
 
-| **Variable**              | **Description**                                             | **Default** |
-| ------------------------- | ----------------------------------------------------------- | ----------- |
-| `RT_LOG_LEVEL`            | rTorrent log level                                          | `info`      |
-| `RT_LOG_EXECUTE`          | Log executed commands to `/config/rtorrent/log/execute.log` | `false`     |
-| `RT_LOG_XMLRPC`           | Log XMLRPC queries to `/config/rtorrent/log/xmlrpc.log`     | `false`     |
-| `RT_SESSION_SAVE_SECONDS` | Interval (in seconds) between saving session data to disk   | `3600`      |
-| `RT_TRACKER_DELAY_SCRAPE` | Delay tracker announces at startup                          | `true`      |
-| `RT_RECEIVE_BUFFER_SIZE`  | TCP receive buffer size (`network.receive_buffer.size.set`) | `16M`       |
-| `RT_SEND_BUFFER_SIZE`     | TCP send buffer size (`network.send_buffer.size.set`)       | `16M`       |
-| `RT_PREALLOCATE_TYPE`     | Disk space preallocation type                               | `0`         |
-| `RT_DHT_PORT`             | DHT UDP port (`dht.port.set`)                               | `6881`      |
-| `RT_INC_PORT`             | Incoming port range (`network.port_range.set`)              | `50000`     |
+### Application & UIs
 
-### ruTorrent
+| **Variable** | **Description** | **Default** |
+| ------------ | --------------- | ----------- |
+| `ENABLE_FLOOD` | Enable embedded Flood UI service (`yes`/`no`) | `yes` |
+| `FLOOD_PORT` | Internal port for Flood UI | `3000` |
+| `RUTORRENT_PORT` | Internal HTTP port for ruTorrent | `9080` |
+| `WEBUI_USER` | ruTorrent & Flood WebUI Username | `admin` |
+| `WEBUI_PASS` | ruTorrent & Flood WebUI Password | `admin` |
+| `RPC2_USER` | RPC2 Username for Sonarr/Radarr | `admin` |
+| `RPC2_PASS` | RPC2 Password for Sonarr/Radarr | `admin` |
 
-| **Variable**                     | **Description**                                                   | **Default**                       |
-| -------------------------------- | ----------------------------------------------------------------- | --------------------------------- |
-| `RU_REMOVE_CORE_PLUGINS`         | Remove ruTorrent core plugins; comma-separated                    | `false`                           |
-| `RU_HTTP_USER_AGENT`             | ruTorrent HTTP user agent                                         | `Mozilla Firefox`                 |
-| `RU_HTTP_TIME_OUT`               | ruTorrent HTTP timeout in seconds                                 | `30`                              |
-| `RU_HTTP_USE_GZIP`               | Use HTTP Gzip compression                                         | `true`                            |
-| `RU_RPC_TIME_OUT`                | ruTorrent RPC timeout in seconds                                  | `5`                               |
-| `RU_LOG_RPC_CALLS`               | Log ruTorrent RPC calls                                           | `false`                           |
-| `RU_LOG_RPC_FAULTS`              | Log ruTorrent RPC faults                                          | `true`                            |
-| `RU_PHP_USE_GZIP`                | Use PHP Gzip compression                                          | `false`                           |
-| `RU_PHP_GZIP_LEVEL`              | PHP Gzip compression level                                        | `2`                               |
-| `RU_SCHEDULE_RAND`               | Random delay (0 to X seconds) for scheduler start                 | `10`                              |
-| `RU_LOG_FILE`                    | ruTorrent log file path for error messages                        | `/config/rutorrent/rutorrent.log` |
-| `RU_DO_DIAGNOSTIC`               | ruTorrent diagnostics (e.g., permission checks)                   | `true`                            |
-| `RU_CACHED_PLUGIN_LOADING`       | Enable rapid cached loading of ruTorrent plugins                  | `false`                           |
-| `RU_SAVE_UPLOADED_TORRENTS`      | Save uploaded torrent files to `/config/rutorrent/share/torrents` | `true`                            |
-| `RU_OVERWRITE_UPLOADED_TORRENTS` | Overwrite existing `.torrent` files                               | `false`                           |
-| `RU_FORBID_USER_SETTINGS`        | Enforce global settings, even with HTTP auth                      | `false`                           |
-| `RU_LOCALE`                      | Default locale for ruTorrent                                      | `UTF8`                            |
+### rTorrent & Engine
 
-## Ports
+| **Variable** | **Description** | **Default** |
+| ------------ | --------------- | ----------- |
+| `RT_INC_PORT` | Single incoming BitTorrent peer port | `50000` |
+| `RT_PREALLOCATE_TYPE` | File pre-allocation mode (`0` = Disabled, `1` = fallocate) | `0` |
+| `RT_STATE_SAVE_SECONDS` | Interval in seconds to snapshot live UI state to disk | `10` |
+| `RT_SESSION_SAVE_SECONDS` | Interval in seconds to snapshot torrent session files | `1200` |
+| `RT_DHT_PORT` | DHT UDP port | `6881` |
+| `RT_LOG_LEVEL` | rTorrent logging verbosity (`critical`, `error`, `warn`, `notice`, `info`, `debug`) | `info` |
 
-| **Port** | **Variable**     | **Description**                                 |
-| -------- | ---------------- | ----------------------------------------------- |
-| `6881`   | `RT_DHT_PORT`    | DHT UDP port (`dht.port.set`)                   |
-| `50000`  | `RT_INC_PORT`    | Incoming connections (`network.port_range.set`) |
-| `8000`   | `XMLRPC_PORT`    | XMLRPC port through Nginx over SCGI socket      |
-| `8080`   | `RUTORRENT_PORT` | ruTorrent HTTP port                             |
-| `9000`   | `WEBDAV_PORT`    | WebDAV port for completed downloads             |
+---
 
-## Notes
+## Ports Summary
 
-### WebDAV
+| **Port** | **Protocol** | **Description** |
+| -------- | ------------ | --------------- |
+| `3000` | TCP | Flood Modern Web UI |
+| `9080` | TCP | ruTorrent Web UI |
+| `5000` | TCP | SCGI / RPC2 Endpoint for Sonarr & Radarr |
+| `50000` | TCP | BitTorrent Incoming Peer Listening Port |
+| `6881` | UDP | DHT Port |
+| `9000` | TCP | WebDAV Port (optional for completed downloads) |
 
-WebDAV allows you to retrieve your completed torrent files in `/data` on port `9000`. Like XMLRPC, these
-requests can be secured with basic authentication through the `/passwd/webdav.htpasswd` file in which you will need to
-add a username with his password. See below to populate this file with a user / password.
+---
 
-### Populate .htpasswd files
+## Management & Customization
 
-For ruTorrent basic auth, XMLRPC through nginx and WebDAV on completed downloads, you can populate `.htpasswd`
-files with the following command:
+### WebDAV Access
+
+WebDAV allows browsing completed downloads in `/data` on port `9000`. Authenticate by creating `/passwd/webdav.htpasswd`.
+
+### Populating `.htpasswd` Files
+
+Generate HTTP basic auth credentials using `htpasswd`:
 
 ```bash
 docker run --rm -it httpd:2.4-alpine htpasswd -Bbn <username> <password> >> $(pwd)/passwd/webdav.htpasswd
 ```
 
-Htpasswd files used:
+Available password files in `/passwd`:
+* `rpc.htpasswd` — RPC2 endpoint authentication
+* `rutorrent.htpasswd` — ruTorrent WebUI authentication
+* `webdav.htpasswd` — WebDAV completed downloads access
 
-* `rpc.htpasswd`: XMLRPC through nginx
-* `rutorrent.htpasswd`: ruTorrent basic auth
-* `webdav.htpasswd`: WebDAV on completed downloads
+### Custom ruTorrent Plugins and Themes
 
-### Override or add a ruTorrent plugin/theme
+To add or override a ruTorrent plugin or theme:
+- Place custom plugins in `/config/rutorrent/plugins/`
+- Place custom themes in `/config/rutorrent/themes/`
 
-You can add a plugin for ruTorrent in `/config/rutorrent/plugins/`.
+### Editing Plugin Configurations
 
-If you add a plugin that already exists in ruTorrent,
-it will be removed from ruTorrent core plugins and yours will be used. And you can also add a theme in
-`/config/rutorrent/themes/`. The same principle as for plugins will be used if you want to override one.
-
-> :information_source: Container has to be restarted to propagate changes
-
-### Edit a ruTorrent plugin configuration
-
-As you probably know, plugin configuration is not outsourced in ruTorrent. Loading the configuration of a plugin is
-done via a `conf.php` file placed at the root of the plugin folder. To solve this issue with Docker, a special folder
-has been created in `/config/rutorrent/plugins-conf` to allow you to configure plugins. For example to configure the
-`diskspace` plugin, you will need to create the `/config/rutorrent/plugins-conf/diskspace.php` file with your
-configuration:
+Override ruTorrent plugin settings by creating custom PHP config files in `/config/rutorrent/plugins-conf/`. For example, create `/config/rutorrent/plugins-conf/diskspace.php`:
 
 ```php
 <?php
-$diskUpdateInterval = 10;	// in seconds
-$notifySpaceLimit = 512;	// in Mb
-$partitionDirectory = null;	// if null, then we will check rtorrent download directory 
+$diskUpdateInterval = 10; // in seconds
+$notifySpaceLimit = 512;  // in MB
 ```
-
-> :information_source: Container has to be restarted to propagate changes
-
-Fork based on the version of [CrazyMax](https://github.com/crazy-max/docker-rtorrent-rutorrent)
