@@ -704,10 +704,17 @@ chmod +x /etc/services.d/rtorrent/run
 
 cat > /etc/services.d/rtorrent/finish <<EOL
 #!/bin/sh
-# On service stop, ask rTorrent to shut down gracefully so it announces
-# event=stopped to all trackers before exiting (prevents "multiple locations").
-# Uses XMLRPC-over-HTTP on the local no-auth health port (same as healthcheck),
-# because the image has no SCGI CLI binary.
+# On service stop or crash, notify trackers so private trackers do not flag "multiple locations".
+# \$1 = exit code of run script, \$2 = signal code (or 0)
+EXIT_CODE="\${1:-0}"
+SIGNAL_CODE="\${2:-0}"
+
+# Run crash-path emergency announce helper if rTorrent exited abnormally
+if [ "\${EXIT_CODE}" -ne 0 ] || [ "\${SIGNAL_CODE}" -ne 0 ]; then
+  /usr/local/bin/crash-stopped-announce.sh "\${EXIT_CODE}" "\${SIGNAL_CODE}" || true
+fi
+
+# On graceful service stop (clean shutdown), ask rTorrent to shut down cleanly via XMLRPC
 SOCK="/var/run/rtorrent/scgi.socket"
 RPC_URL="http://127.0.0.1:${XMLRPC_HEALTH_PORT}"
 if [ -S "\${SOCK}" ]; then

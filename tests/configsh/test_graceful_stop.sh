@@ -6,5 +6,6 @@ F="$HERE/../../rootfs/etc/cont-init.d/configurations.sh"
 grep -q 'services.d/rtorrent/finish' "$F" || { echo "FAIL: no finish script for graceful stop"; exit 1; }
 grep -q 'system.shutdown' "$F" || { echo "FAIL: no graceful shutdown call"; exit 1; }
 grep -q '\\$i" -lt 3' "$F" || { echo "FAIL: finish script loop timeout not capped at 3s"; exit 1; }
+grep -q 'crash-stopped-announce.sh' "$F" || { echo "FAIL: crash-stopped-announce not wired in finish"; exit 1; }
 if grep -q 'xmlrpc2scgi' "$F"; then echo "FAIL: references nonexistent xmlrpc2scgi"; exit 1; fi
 echo "PASS"
