@@ -145,7 +145,11 @@ rtstate_snapshot() {
     [ -n "$raw" ] || continue
     val="$raw"
     case "$ckey" in
-      *.max_rate.set_kb) val=$(( raw / 1024 )) ;;
+      *.max_rate.set_kb)
+        val=$(( raw / 1024 ))
+        # Normalize any rate >= 4194300 (rTorrent max/unlimited representation) to 0
+        [ "$val" -ge 4194300 ] 2>/dev/null && val=0
+        ;;
     esac
     rtstate_validate "$kind" "$val" || continue
 
