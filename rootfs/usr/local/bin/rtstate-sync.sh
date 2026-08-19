@@ -17,7 +17,6 @@ throttle.max_peers.seed.set|throttle.max_peers.seed|int
 throttle.min_peers.normal.set|throttle.min_peers.normal|int
 throttle.min_peers.seed.set|throttle.min_peers.seed|int
 protocol.pex.set|protocol.pex|bool
-trackers.use_udp.set|trackers.use_udp|bool
 pieces.hash.on_completion.set|pieces.hash.on_completion|bool
 directory.default.set|directory.default|path
 network.receive_buffer.size.set|network.receive_buffer.size|bytes
@@ -124,7 +123,7 @@ _rt_get() {
     "$RTSTATE_GET_CMD" "$getter"; return $?
   fi
   body="<?xml version=\"1.0\"?><methodCall><methodName>${getter}</methodName><params></params></methodCall>"
-  resp=$(curl -s --max-time 5 -H "Content-Type: text/xml" --data "${body}" "${url}" 2>/dev/null || true)
+  resp=$(curl -s --connect-timeout 2 --max-time 3 -H "Content-Type: text/xml" --data "${body}" "${url}" 2>/dev/null || true)
   # Extract the scalar inside <value><i8>|<i4>|<int>|<string>...
   val=$(printf '%s' "$resp" | sed -n -E 's:.*<value><(i8|i4|int)>(-?[0-9]+)</(i8|i4|int)></value>.*:\2:p')
   if [ -z "$val" ]; then
