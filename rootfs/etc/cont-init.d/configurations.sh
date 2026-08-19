@@ -282,7 +282,8 @@ fi
 tr -d '\r' < /etc/rtorrent/.rtlocal.rc > /etc/rtorrent/.rtlocal.rc.tmp && mv -f /etc/rtorrent/.rtlocal.rc.tmp /etc/rtorrent/.rtlocal.rc
 if [ -f "${CONFIG_PATH}/rtorrent/.rtorrent.rc" ]; then
   tr -d '\r' < "${CONFIG_PATH}/rtorrent/.rtorrent.rc" > "${CONFIG_PATH}/rtorrent/.rtorrent.rc.tmp" && mv -f "${CONFIG_PATH}/rtorrent/.rtorrent.rc.tmp" "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
-  sed -i -E 's/\)\)throttle/\)\n\nthrottle/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
+  sed -i -E 's/\)\)throttle/\)\)\n\nthrottle/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
+  sed -i -E 's/\(\(close_low_diskspace,([0-9]+[KMGT])\)$/\(\(close_low_diskspace,\1\)\)/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
   [ -s "${CONFIG_PATH}/rtorrent/.rtorrent.rc" ] && [ "$(tail -c 1 "${CONFIG_PATH}/rtorrent/.rtorrent.rc" 2>/dev/null || true)" != "$(printf '\n')" ] && printf '\n' >> "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
 fi
 if [ -f "${CONFIG_PATH}/rtorrent/.rtstate.rc" ]; then
