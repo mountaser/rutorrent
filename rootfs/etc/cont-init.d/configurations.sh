@@ -387,6 +387,7 @@ sed -i "s!@RC_BASENAME@!${RC_BASENAME}!g" /etc/rtorrent/.rtlocal.rc
 # Newest-write-wins arbitration so UI state and rtorrent.rc stay in sync.
 RC_PATH="${CONFIG_PATH}/rtorrent/${RC_BASENAME}"
 ST_PATH="${CONFIG_PATH}/rtorrent/.rtstate.rc"
+chmod +x /usr/local/bin/rtstate-sync.sh 2>/dev/null || true
 if [ -x /usr/local/bin/rtstate-sync.sh ]; then
   echo "  ${norm}[${green}+${norm}] Reconciling UI state and rtorrent.rc (newest-write-wins)..."
   /usr/local/bin/rtstate-sync.sh arbitrate "${RC_PATH}" "${ST_PATH}" || \
