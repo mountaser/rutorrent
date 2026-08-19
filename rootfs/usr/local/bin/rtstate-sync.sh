@@ -108,8 +108,9 @@ _log() {
   echo "${line}"
   log_file="${RTSTATE_LOG_FILE:-${CONFIG_PATH:-/config}/rtorrent/log/rtstate-sync.log}"
   log_dir=$(dirname "${log_file}")
-  [ -d "${log_dir}" ] || mkdir -p "${log_dir}" 2>/dev/null || true
-  printf '%s\n' "${line}" >> "${log_file}" 2>/dev/null || true
+  if [ -d "${log_dir}" ] || mkdir -p "${log_dir}" 2>/dev/null; then
+    printf '%s\n' "${line}" >> "${log_file}" 2>/dev/null || true
+  fi
 }
 
 # Query one rtorrent getter via XMLRPC-over-HTTP (same path as healthcheck).
