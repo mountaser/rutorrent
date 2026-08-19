@@ -32,9 +32,9 @@ dht.override_port.set = @RT_DHT_PORT@
 network.xmlrpc.size_limit.set = @XMLRPC_SIZE_LIMIT@
 
 # Performance & Memory limits for large sessions (~600 torrents)
-pieces.memory.max.set = 3500M
-network.max_open_files.set = 8192
-network.max_open_sockets.set = 1024
+pieces.memory.max.set = 4G
+network.max_open_files.set = 16384
+network.max_open_sockets.set = 8000
 pieces.preload.type.set = 1
 pieces.preload.min_size.set = 262144
 

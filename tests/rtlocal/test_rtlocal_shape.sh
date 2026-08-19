@@ -3,8 +3,10 @@ set -eu
 HERE=$(cd "$(dirname "$0")" && pwd)
 F="$HERE/../../rootfs/etc/rtorrent/.rtlocal.rc"
 
-# network.max_open_files.set must be present for 0.16.20
-grep -Eq '^[[:space:]]*network\.max_open_files\.set' "$F" || { echo "FAIL: missing network.max_open_files.set"; exit 1; }
+# network.max_open_files.set and max_open_sockets.set present with tuned values
+grep -Eq '^[[:space:]]*network\.max_open_files\.set = 16384' "$F" || { echo "FAIL: network.max_open_files.set not 16384"; exit 1; }
+grep -Eq '^[[:space:]]*network\.max_open_sockets\.set = 8000' "$F" || { echo "FAIL: network.max_open_sockets.set not 8000"; exit 1; }
+grep -Eq '^[[:space:]]*pieces\.memory\.max\.set = 4G' "$F" || { echo "FAIL: pieces.memory.max.set not 4G"; exit 1; }
 if grep -Eq '^[[:space:]]*system\.sockets\.files\.min\.set' "$F"; then echo "FAIL: invalid system.sockets.files.min.set present"; exit 1; fi
 # curl concurrency cap present
 if grep -Eq '^[[:space:]]*network\.http\.max_open\.set' "$F"; then echo "FAIL: invalid network.http.max_open.set present"; exit 1; fi

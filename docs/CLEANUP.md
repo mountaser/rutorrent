@@ -38,7 +38,7 @@ rm -rf \
 
 The active image keeps and syncs:
 - `rtorrent/session/` — active session state (NEVER delete)
-- `config/rtorrent.rc` or `.rtorrent.rc` — user configuration
+- `.rtorrent.rc` — user configuration
 - `.rtstate.rc` — auto-generated live UI state mirror
 - `log/` — active log files (`rtorrent.log`, `rtorrent-stderr.log`, `rtorrent-exit.log`)
 - `watch/` — watch directories

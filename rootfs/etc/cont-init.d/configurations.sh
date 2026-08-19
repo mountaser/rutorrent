@@ -283,9 +283,6 @@ tr -d '\r' < /etc/rtorrent/.rtlocal.rc > /etc/rtorrent/.rtlocal.rc.tmp && mv -f 
 if [ -f "${CONFIG_PATH}/rtorrent/.rtorrent.rc" ]; then
   tr -d '\r' < "${CONFIG_PATH}/rtorrent/.rtorrent.rc" > "${CONFIG_PATH}/rtorrent/.rtorrent.rc.tmp" && mv -f "${CONFIG_PATH}/rtorrent/.rtorrent.rc.tmp" "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
 fi
-if [ -f "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" ]; then
-  tr -d '\r' < "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" > "${CONFIG_PATH}/rtorrent/config/rtorrent.rc.tmp" && mv -f "${CONFIG_PATH}/rtorrent/config/rtorrent.rc.tmp" "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
-fi
 if [ -f "${CONFIG_PATH}/rtorrent/.rtstate.rc" ]; then
   tr -d '\r' < "${CONFIG_PATH}/rtorrent/.rtstate.rc" > "${CONFIG_PATH}/rtorrent/.rtstate.rc.tmp" && mv -f "${CONFIG_PATH}/rtorrent/.rtstate.rc.tmp" "${CONFIG_PATH}/rtorrent/.rtstate.rc"
   sed -i -E 's/^[[:space:]]*trackers\.use_udp\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtstate.rc"
@@ -294,7 +291,7 @@ fi
 # Adopt the incoming peer port from a legacy config when RT_INC_PORT is not set explicitly.
 # Only .rtlocal.rc is allowed to declare port_range; a second declaration binds twice and
 # aborts rTorrent with "Could not open/bind port for listening: Address in use".
-for legacy_rc in "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" "${CONFIG_PATH}/rtorrent/.rtorrent.rc"; do
+for legacy_rc in "${CONFIG_PATH}/rtorrent/.rtorrent.rc"; do
   [ -f "${legacy_rc}" ] || continue
   [ -n "${RT_INC_PORT_EXPLICIT}" ] && break
   legacy_port=$(sed -nE 's/^[[:space:]]*(network\.port_range\.set|port_range)[[:space:]]*=[[:space:]]*([0-9]+).*/\2/p' "${legacy_rc}" | head -n1)
@@ -332,32 +329,10 @@ if [ "${RT_LOG_XMLRPC}" = "true" ]; then
   sed -i "s!#log\.xmlrpc.*!log\.xmlrpc = (cat,(cfg.logs),\"xmlrpc.log\")!g" /etc/rtorrent/.rtlocal.rc
 fi
 
-# Binhex compatibility checks for legacy session folder and config file
+# Session directory lock check
 if [ -d "${CONFIG_PATH}/rtorrent/session" ]; then
-  echo "  ${norm}[${green}+${norm}] Detected binhex session directory (${CONFIG_PATH}/rtorrent/session)..."
   sed -i 's!\.session/!session/!g' /etc/rtorrent/.rtlocal.rc
   rm -f ${CONFIG_PATH}/rtorrent/session/rtorrent.lock
-fi
-if [ -f "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" ]; then
-  echo "  ${norm}[${green}+${norm}] Detected binhex custom rtorrent.rc (${CONFIG_PATH}/rtorrent/config/rtorrent.rc)..."
-  sed -i -E 's/^[[:space:]]*scgi_port[[:space:]]*=.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
-  sed -i -E 's!/usr/share/webapps/rutorrent!/var/www/rutorrent!g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
-  sed -i -E 's/^[[:space:]]*log\.add_output[[:space:]]*=[[:space:]]*"dht_debug".*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
-  sed -i -E 's/^[[:space:]]*log\.add_output[[:space:]]*=[[:space:]]*"tracker_debug".*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
-  sed -i -E 's/^[[:space:]]*log\.add_output[[:space:]]*=[[:space:]]*"storage_debug".*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
-  sed -i -E 's/^[[:space:]]*check_hash[[:space:]]*=.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
-  sed -i -E 's/^[[:space:]]*max_memory_usage[[:space:]]*=.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
-  sed -i -E 's/^[[:space:]]*execute[[:space:]]*=[[:space:]]*\{.*initplugins.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
-  sed -i -E 's/^[[:space:]]*.*inserted_new.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
-  sed -i -E 's/^[[:space:]]*(network\.port_range\.set|port_range)[[:space:]]*=.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
-  sed -i -E 's/^[[:space:]]*network\.port_random\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
-  sed -i -E 's/^[[:space:]]*trackers\.use_udp\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
-  sed -i -E 's/^[[:space:]]*network\.max_open_files\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
-  sed -i -E 's/^[[:space:]]*schedule2[[:space:]]*=/schedule =/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
-  sed -i -E 's/^[[:space:]]*protocol\.encryption\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/config/rtorrent.rc"
-  if ! grep -q "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" /etc/rtorrent/.rtlocal.rc; then
-    printf "\nimport = \"%s\"\n" "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" >> /etc/rtorrent/.rtlocal.rc
-  fi
 fi
 
 # rTorrent default config
@@ -376,12 +351,8 @@ else
   sed -i -E 's/^[[:space:]]*protocol\.encryption\.set.*/# &/g' "${CONFIG_PATH}/rtorrent/.rtorrent.rc"
 fi
 
-# Resolve the synced rtorrent.rc (binhex config path wins if present).
-if [ -f "${CONFIG_PATH}/rtorrent/config/rtorrent.rc" ]; then
-  RC_BASENAME="config/rtorrent.rc"
-else
-  RC_BASENAME=".rtorrent.rc"
-fi
+# Synced rtorrent.rc path
+RC_BASENAME=".rtorrent.rc"
 sed -i "s!@RC_BASENAME@!${RC_BASENAME}!g" /etc/rtorrent/.rtlocal.rc
 
 # Newest-write-wins arbitration so UI state and rtorrent.rc stay in sync.
