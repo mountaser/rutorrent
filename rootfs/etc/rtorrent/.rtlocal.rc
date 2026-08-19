@@ -35,7 +35,6 @@ network.xmlrpc.size_limit.set = @XMLRPC_SIZE_LIMIT@
 pieces.memory.max.set = 3500M
 network.max_open_files.set = 8192
 network.max_open_sockets.set = 1024
-network.http.max_open.set = 32
 pieces.preload.type.set = 1
 pieces.preload.min_size.set = 262144
 

@@ -7,7 +7,7 @@ F="$HERE/../../rootfs/etc/rtorrent/.rtlocal.rc"
 grep -Eq '^[[:space:]]*network\.max_open_files\.set' "$F" || { echo "FAIL: missing network.max_open_files.set"; exit 1; }
 if grep -Eq '^[[:space:]]*system\.sockets\.files\.min\.set' "$F"; then echo "FAIL: invalid system.sockets.files.min.set present"; exit 1; fi
 # curl concurrency cap present
-grep -Eq '^[[:space:]]*network\.http\.max_open\.set' "$F" || { echo "FAIL: missing http.max_open cap"; exit 1; }
+if grep -Eq '^[[:space:]]*network\.http\.max_open\.set' "$F"; then echo "FAIL: invalid network.http.max_open.set present"; exit 1; fi
 # snapshot uses helper, not inline echo blocks
 if grep -q 'Auto-generated runtime settings state' "$F"; then echo "FAIL: inline snapshot still present"; exit 1; fi
 grep -q 'rtstate-sync.sh' "$F" || { echo "FAIL: helper not called"; exit 1; }
