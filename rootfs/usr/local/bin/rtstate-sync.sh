@@ -49,6 +49,9 @@ rtstate_set_rc() {
     rhs=$(_sed_rhs_escape "${key} = ${val}")
     sed -i -E "s/^[[:space:]]*${esc_key}[[:space:]]*=.*/${rhs}/" "$rc"
   else
+    if [ -s "$rc" ] && [ "$(tail -c 1 "$rc" 2>/dev/null || true)" != "$(printf '\n')" ]; then
+      printf '\n' >> "$rc"
+    fi
     printf '%s = %s\n' "$key" "$val" >> "$rc"
   fi
 }
