@@ -3,7 +3,7 @@ set -eu
 HERE=$(cd "$(dirname "$0")" && pwd)
 F="$HERE/../../rootfs/etc/rtorrent/.rtorrent.rc"
 
-grep -Eq '^[[:space:]]*throttle\.global_up\.max_rate\.set_kb = 5120' "$F" || { echo "FAIL: global_up not 5120"; exit 1; }
+grep -Eq '^[[:space:]]*throttle\.global_up\.max_rate\.set_kb = 10240' "$F" || { echo "FAIL: global_up not 10240"; exit 1; }
 grep -Eq '^[[:space:]]*throttle\.global_down\.max_rate\.set_kb = 0' "$F" || { echo "FAIL: global_down not 0"; exit 1; }
 grep -Eq '^[[:space:]]*throttle\.max_peers\.normal\.set = 150' "$F" || { echo "FAIL: max_peers.normal not 150"; exit 1; }
 grep -Eq '^[[:space:]]*throttle\.max_peers\.seed\.set = 75' "$F" || { echo "FAIL: max_peers.seed not 75"; exit 1; }
