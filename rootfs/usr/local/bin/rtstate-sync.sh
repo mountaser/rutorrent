@@ -86,16 +86,30 @@ rtstate_arbitrate() {
   rc="$1"; st="$2"
   [ -f "$rc" ] || : > "$rc"
   if [ ! -f "$st" ] || ! _has_keys "$st"; then
+    _log "[arbitrate] No valid UI state found. Seeding .rtstate.rc from rtorrent.rc"
     rtstate_seed_from_rc "$rc" "$st"; return 0
   fi
   rc_m=$(_mtime "$rc"); st_m=$(_mtime "$st")
   if [ "$rc_m" -gt "$st_m" ]; then
+    _log "[arbitrate] rtorrent.rc is newer than .rtstate.rc. Config wins, updating .rtstate.rc"
     rtstate_seed_from_rc "$rc" "$st"            # config wins
   else
+    _log "[arbitrate] .rtstate.rc is newer than rtorrent.rc. UI wins, updating rtorrent.rc"
     cp -f "$rc" "${rc}.bak.$(date +%Y%m%d%H%M%S)" 2>/dev/null || true
     rtstate_apply_state_to_rc "$rc" "$st"       # UI wins
     rtstate_seed_from_rc "$rc" "$st"            # converge
   fi
+}
+
+_log() {
+  msg="$1"
+  ts=$(date '+%Y-%m-%d %H:%M:%S' 2>/dev/null || echo "boot")
+  line="[${ts}] ${msg}"
+  echo "${line}"
+  log_file="${RTSTATE_LOG_FILE:-${CONFIG_PATH:-/config}/rtorrent/log/rtstate-sync.log}"
+  log_dir=$(dirname "${log_file}")
+  [ -d "${log_dir}" ] || mkdir -p "${log_dir}" 2>/dev/null || true
+  printf '%s\n' "${line}" >> "${log_file}" 2>/dev/null || true
 }
 
 # Query one rtorrent getter via XMLRPC-over-HTTP (same path as healthcheck).
@@ -133,6 +147,17 @@ rtstate_snapshot() {
       *.max_rate.set_kb) val=$(( raw / 1024 )) ;;
     esac
     rtstate_validate "$kind" "$val" || continue
+
+    # Check if value changed compared to current state file
+    old_line=$(grep -E "^[[:space:]]*$(printf '%s' "$ckey" | sed -e 's/[.[\*^$]/\\&/g')[[:space:]]*=" "$st" 2>/dev/null | tail -n1 || true)
+    old_val=""
+    if [ -n "$old_line" ]; then
+      old_val=$(printf '%s' "$old_line" | sed -E 's/^[^=]*=[[:space:]]*//; s/[[:space:]]*$//')
+    fi
+    if [ -n "$old_val" ] && [ "$old_val" != "$val" ]; then
+      _log "[snapshot] Changed ${ckey}: ${old_val} -> ${val} (saved to .rtstate.rc & synced to rtorrent.rc)"
+    fi
+
     printf '%s = %s\n' "$ckey" "$val" >> "$tmp"
   done
   mv -f "$tmp" "$st"
@@ -146,6 +171,7 @@ case "${1:-}" in
   __set_rc) shift; rtstate_set_rc "$@" ;;
   __apply_state) shift; rtstate_apply_state_to_rc "$@" ;;
   __seed_state) shift; rtstate_seed_from_rc "$@" ;;
+  __log) shift; _log "$@" ;;
   arbitrate) shift; rtstate_arbitrate "$@" ;;
   snapshot) shift; rtstate_snapshot "$@" ;;
   *) echo "usage: rtstate-sync.sh {arbitrate|snapshot} ..." >&2; exit 2 ;;
